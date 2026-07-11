@@ -795,8 +795,10 @@ function Units({refresh,go}){
 function RoomViewModal({unit,onClose,onEdit}){
  const u=Repo.get('units',unit.id)||unit;const c=activeContract(u.id);
  const [tab,setTab]=useState('info');
+ const [histLim,setHistLim]=useState(0); // 0 = แสดงทุกเดือนที่มี
  // ประวัติรายเดือนของห้อง: บิลทุกใบ (ใหม่→เก่า)
- const hist=useMemo(()=>Repo.list('bills',b=>b.unitId===u.id).sort((a,b)=>a.rentMonth<b.rentMonth?1:-1),[u.id]);
+ const histAll=useMemo(()=>Repo.list('bills',b=>b.unitId===u.id).sort((a,b)=>a.rentMonth<b.rentMonth?1:-1),[u.id]);
+ const hist=histLim?histAll.slice(0,histLim):histAll;
  const tenantOf=b=>{
   if(b.tenantId)return tenantName(b.tenantId);
   const mS=b.rentMonth+'-01',mE=b.rentMonth+'-31';
@@ -808,7 +810,7 @@ function RoomViewModal({unit,onClose,onEdit}){
  return <Modal title={'🚪 ห้อง '+u.code} onClose={onClose}>
   <div className="row" style={{gap:6,marginBottom:10}}>
    <button className={'btn sm'+(tab==='info'?'':' line')} onClick={()=>setTab('info')}>ข้อมูลห้อง</button>
-   <button className={'btn sm'+(tab==='hist'?'':' line')} onClick={()=>setTab('hist')}>📊 ประวัติ ({hist.length} เดือน)</button>
+   <button className={'btn sm'+(tab==='hist'?'':' line')} onClick={()=>setTab('hist')}>📊 ประวัติ</button>
   </div>
   {tab==='info'&&<div>
   <R l="ผู้เช่า" v={c?tenantName(c.tenantId):'ไม่มีผู้เช่า (ว่าง)'}/>
@@ -833,6 +835,14 @@ function RoomViewModal({unit,onClose,onEdit}){
   {tab==='hist'&&(hist.length===0
    ?<div className="mut" style={{padding:'14px 0'}}>ยังไม่มีบิลของห้องนี้ — ประวัติจะแสดงเมื่อออกบิลเดือนแรก</div>
    :<div style={{overflowX:'auto'}}>
+    <div className="row" style={{justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+     <span className="mut">มีข้อมูล {histAll.length} เดือน{histLim&&histLim<histAll.length?' · แสดง '+hist.length:''}</span>
+     <label className="mut" style={{display:'flex',alignItems:'center',gap:6}}>ดูย้อนหลัง
+      <select value={histLim} onChange={e=>setHistLim(+e.target.value)}>
+       <option value={0}>ทั้งหมด</option><option value={3}>3 เดือน</option><option value={6}>6 เดือน</option>
+       <option value={12}>12 เดือน</option><option value={24}>24 เดือน</option>
+      </select></label>
+    </div>
     <table className="t"><thead><tr>
      <th>เดือน</th><th>ผู้เช่า</th><th style={{textAlign:'right'}}>ค่าเช่า</th>
      <th style={{textAlign:'right'}}>น้ำ (หน่วย)</th><th style={{textAlign:'right'}}>ไฟ (หน่วย)</th>
