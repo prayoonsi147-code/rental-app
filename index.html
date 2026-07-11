@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ระบบบริหารการเช่า — ไตรพร็อพเพอร์ตี้</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700&family=Sarabun:wght@400;500;600;700&display=swap');
+:root{--g1:#0b3d2e;--g2:#14614a;--g3:#1d7a5f;--gold:#c9a227;--gold2:#eed98a;
+--bg:#f3f1ea;--card:#fff;--tx:#22302b;--mut:#8b948f;--line:#e7e3d8;
+--warn:#d97b29;--red:#c74848;--ok:#1d7a5f;--shadow:0 2px 14px rgba(15,50,40,.07);}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Sarabun','Leelawadee UI',Tahoma,sans-serif;color:var(--tx);font-size:15px;padding-bottom:86px;
+background:radial-gradient(1100px 380px at 50% -120px,#e3ede6,transparent),var(--bg)}
+header.top{background:linear-gradient(135deg,var(--g1) 0%,var(--g2) 55%,var(--g3) 100%);color:#fff;padding:12px 18px;
+position:sticky;top:8px;z-index:20;display:flex;justify-content:space-between;align-items:center;
+width:calc(100% - 16px);max-width:960px;margin:8px auto 0;border-radius:15px;
+border-bottom:3px solid var(--gold);box-shadow:0 4px 16px rgba(11,61,46,.30)}
+header.top h1{font-family:'Prompt',sans-serif;font-size:17px;font-weight:600;letter-spacing:.2px}
+header.top .sub{font-size:11.5px;opacity:.78}
+header.top .date-chip{font-size:12px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
+padding:5px 12px;border-radius:99px;backdrop-filter:blur(4px)}
+nav.bottom{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.96);backdrop-filter:blur(10px);
+border:1px solid var(--line);display:flex;z-index:30;overflow-x:auto;border-radius:18px;
+width:calc(100% - 16px);max-width:960px;
+box-shadow:0 8px 26px rgba(15,50,40,.16);padding:5px 4px}
+nav.bottom button{flex:1;min-width:60px;border:none;background:none;padding:7px 2px;font-size:10.5px;color:var(--mut);
+cursor:pointer;font-family:inherit;border-radius:13px;transition:all .15s}
+nav.bottom button.on{color:var(--g1);font-weight:700;background:linear-gradient(160deg,#e6f1ea,#f3ecd8)}
+nav.bottom button .ic{font-size:19px;display:block;margin-bottom:1px}
+main{padding:14px;max-width:960px;margin:0 auto}
+.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:13px;border:1px solid var(--line);box-shadow:var(--shadow)}
+.card h2{font-family:'Prompt',sans-serif;font-size:15.5px;font-weight:600;color:var(--g1);margin-bottom:12px;
+display:flex;align-items:center;gap:8px}
+.card h2::before{content:'';width:4px;height:17px;border-radius:3px;background:linear-gradient(var(--gold),var(--g3))}
+.hero{background:linear-gradient(135deg,var(--g1),var(--g2) 70%,var(--g3));color:#fff;border-radius:18px;
+padding:20px 18px;margin-bottom:13px;position:relative;overflow:hidden;box-shadow:0 6px 20px rgba(11,61,46,.25)}
+.hero::after{content:'🏢';position:absolute;right:-6px;bottom:-22px;font-size:96px;opacity:.14;transform:rotate(-8deg)}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2),var(--gold))}
+.hero-name{font-family:'Prompt',sans-serif;font-size:19px;font-weight:600}
+.hero-sub{opacity:.85;font-size:13px;margin-top:5px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border-radius:16px;padding:13px 14px;border:1px solid var(--line);box-shadow:var(--shadow);
+display:flex;align-items:center;gap:12px;text-align:left;margin-bottom:0}
+.sic{min-width:44px;height:44px;border-radius:13px;background:linear-gradient(150deg,#e6f1ea,#f6efda);
+display:flex;align-items:center;justify-content:center;font-size:21px}
+.stat .v{font-family:'Prompt',sans-serif;font-size:21px;font-weight:700;color:var(--g1);line-height:1.15}
+.stat .v.warn{color:var(--warn)}
+.stat .l{font-size:11.5px;color:var(--mut)}
+.step{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed var(--line)}
+.step:last-child{border-bottom:0;padding-bottom:0}
+.sn{min-width:27px;height:27px;border-radius:50%;background:linear-gradient(135deg,var(--g2),var(--g3));color:#fff;
+display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;font-family:'Prompt',sans-serif;
+box-shadow:0 2px 6px rgba(20,97,74,.35)}
+.step b{font-size:14px}
+button.btn{background:linear-gradient(135deg,var(--g2),var(--g3));color:#fff;border:none;border-radius:11px;
+padding:10px 17px;font-size:14px;font-family:'Prompt',sans-serif;font-weight:500;cursor:pointer;
+box-shadow:0 3px 10px rgba(20,97,74,.28);transition:transform .12s,box-shadow .12s}
+button.btn:active{transform:scale(.97)}
+button.btn.sm{padding:6px 11px;font-size:12.5px;border-radius:9px;box-shadow:0 2px 6px rgba(20,97,74,.18)}
+button.btn.gray{background:linear-gradient(135deg,#7d8a84,#95a09a);box-shadow:0 2px 6px rgba(0,0,0,.12)}
+button.btn.warn{background:linear-gradient(135deg,#c96e20,#e08a3c);box-shadow:0 2px 8px rgba(217,123,41,.3)}
+button.btn.red{background:linear-gradient(135deg,#b53c3c,#d05656);box-shadow:0 2px 8px rgba(199,72,72,.3)}
+button.btn.line{background:#fff;color:var(--g2);border:1.5px solid var(--g3);box-shadow:none}
+input,select,textarea{font-family:inherit;font-size:15px;padding:9px 12px;border:1.5px solid var(--line);
+border-radius:11px;width:100%;background:#fcfbf8;transition:border .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--g3);box-shadow:0 0 0 3px rgba(29,122,95,.13);background:#fff}
+input[type=number]{text-align:right}
+label.f{display:block;margin-bottom:9px;font-size:13px;color:var(--mut)}
+label.f b{display:block;margin-bottom:4px;font-weight:600;color:var(--tx);font-size:12.5px}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{background:#f0f4ef;padding:8px 8px;text-align:left;font-weight:600;white-space:nowrap;color:var(--g1);
+font-family:'Prompt',sans-serif;font-size:12px;font-weight:500}
+table.t th:first-child{border-radius:9px 0 0 9px}table.t th:last-child{border-radius:0 9px 9px 0}
+table.t td{padding:8.5px 8px;border-bottom:1px solid #f0ede4;white-space:nowrap}
+table.t tbody tr:hover td{background:#f4f8f3}
+table.t td.r,table.t th.r{text-align:right}
+.tag{display:inline-block;padding:2.5px 10px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid transparent}
+.tag.g{background:#e2f1e8;color:#116146;border-color:#c4e2d2}.tag.o{background:#fcecd9;color:#b05e14;border-color:#f3d7b4}
+.tag.r{background:#fae1e1;color:#a33333;border-color:#f0c6c6}.tag.b{background:#eceee9;color:#5e6a64;border-color:#dde0d8}
+.modal-bg{position:fixed;inset:0;background:rgba(14,30,24,.55);backdrop-filter:blur(3px);z-index:40;
+display:flex;align-items:flex-end;justify-content:center}
+.modal{background:#fff;border-radius:22px 22px 0 0;padding:18px;width:100%;max-width:640px;max-height:88vh;
+overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.25)}
+.modal::before{content:'';display:block;width:42px;height:5px;border-radius:99px;background:#ddd8ca;margin:0 auto 12px}
+@media(min-width:640px){.modal-bg{align-items:center}.modal{border-radius:22px}.modal::before{display:none}}
+.scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.mut{color:var(--mut);font-size:12px}
+.tot{font-weight:700;color:var(--g1)}
+.upill{flex:1;padding:11px 8px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);font-family:'Prompt',sans-serif;font-weight:600;font-size:14.5px;color:var(--mut);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.15s}
+.upill:active{transform:scale(.98)}
+.upill.water.on{background:#12489e;border-color:#12489e;color:#fff;box-shadow:0 3px 10px rgba(18,72,158,.32)}
+.upill.elec.on{background:#7b2d8e;border-color:#7b2d8e;color:#fff;box-shadow:0 3px 10px rgba(123,45,142,.32)}
+.wtxt{color:#12489e;font-weight:700}
+.etxt{color:#7b2d8e;font-weight:700}
+html[data-theme=dark] .upill{background:transparent}
+html[data-theme=dark] .wtxt{color:#7fb0f5}
+html[data-theme=dark] .etxt{color:#d59be6}
+/* ปุ่มไอคอนรอง (ทรง+สีเดียวกันทั้งหมด) */
+.iconbtn{width:40px;height:36px;padding:0;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;font-size:16px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--g2);cursor:pointer;transition:.12s}
+.iconbtn:active{transform:scale(.94)}
+.iconbtn:hover{border-color:var(--g3)}
+html[data-theme=dark] .iconbtn{background:transparent;color:#8fd7bb;border-color:#3f5c50}
+/* ตารางจดมิเตอร์: กว้างพอดีเนื้อหา ไม่ยืดเต็มจอ */
+table.t.mtable{width:auto;min-width:340px}
+table.t.leftw{width:auto}
+table.t.mtable th,table.t.mtable td{padding:7px 14px}
+.mtable input.mval{width:104px;padding:7px 8px;font-size:15px;font-weight:700;border-radius:9px}
+.mtable input.mprev{width:64px;padding:5px 6px;font-size:12.5px;color:var(--mut);border-radius:8px}
+/* ป้ายหน่วยที่ใช้ (สีตามน้ำ/ไฟ) */
+.ubadge{display:inline-block;min-width:30px;text-align:center;padding:2px 9px;border-radius:8px;font-weight:700;font-size:13px}
+.ubadge.w{background:#e7f0fb;color:#12489e}
+.ubadge.e{background:#f3e9f7;color:#7b2d8e}
+html[data-theme=dark] .ubadge.w{background:#16304f;color:#7fb0f5}
+html[data-theme=dark] .ubadge.e{background:#3a2544;color:#d59be6}
+/* เลขห้องแบบลิงก์เบา ๆ (แตะดูประวัติ) */
+.rlink{font-weight:700;color:var(--g1);cursor:pointer;border-bottom:1.5px dotted var(--mut)}
+.rlink:hover{border-bottom-color:var(--g3);color:var(--g3)}
+html[data-theme=dark] .rlink{color:#cfe8dc}
+html[data-theme=dark]{--bg:#101a15;--card:#1a2620;--tx:#e5ece8;--mut:#94a19b;--line:#2b3a33;
+--shadow:0 2px 14px rgba(0,0,0,.35);}
+html[data-theme=dark] body{background:radial-gradient(1100px 380px at 50% -120px,#17271f,transparent),var(--bg)}
+html[data-theme=dark] .card h2{color:#a8dac4}
+html[data-theme=dark] .stat .v{color:#9fdcc2}
+html[data-theme=dark] .tot{color:#9fdcc2}
+html[data-theme=dark] table.t th{background:#20302a;color:#a8dac4}
+html[data-theme=dark] table.t td{border-bottom-color:#26332d}
+html[data-theme=dark] table.t tbody tr:hover td{background:#1f2d26}
+html[data-theme=dark] nav.bottom{background:rgba(21,31,26,.97);border-color:#2b3a33;box-shadow:0 8px 26px rgba(0,0,0,.45)}
+html[data-theme=dark] nav.bottom button.on{color:#d8ecdf;background:linear-gradient(160deg,#25392f,#37331e)}
+html[data-theme=dark] input,html[data-theme=dark] select,html[data-theme=dark] textarea{background:#152019;border-color:#2b3a33;color:var(--tx)}
+html[data-theme=dark] input:focus,html[data-theme=dark] select:focus,html[data-theme=dark] textarea:focus{background:#182420;border-color:#3f8a6e}
+html[data-theme=dark] button.btn.line{background:transparent;color:#8fd7bb;border-color:#3f5c50}
+html[data-theme=dark] .sic{background:linear-gradient(150deg,#20342a,#3a331d)}
+html[data-theme=dark] .tag.g{background:#173428;color:#8fd7bb;border-color:#265a45}
+html[data-theme=dark] .tag.o{background:#3a2a15;color:#eda75c;border-color:#5c4423}
+html[data-theme=dark] .tag.r{background:#3a1d1d;color:#e58787;border-color:#5c2e2e}
+html[data-theme=dark] .tag.b{background:#242b27;color:#a3b0aa;border-color:#37413c}
+html[data-theme=dark] .modal{background:#1a2620}
+html[data-theme=dark] .modal::before{background:#3a463f}
+html[data-theme=dark] .step{border-bottom-color:#2b3a33}
+.prop-sel{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:12px;
+padding:3px 9px;border-radius:8px;width:auto;margin-top:4px;font-family:inherit;max-width:230px}
+.prop-sel option{color:#223;background:#fff}
+.tap{cursor:pointer;transition:transform .1s}
+.tap:active{transform:scale(.985)}
+.step.curp{background:linear-gradient(90deg,rgba(29,122,95,.09),transparent);border-radius:12px;padding-left:8px;margin-left:-8px}
+html[data-theme=dark] .step.curp{background:linear-gradient(90deg,rgba(143,215,187,.10),transparent)}
+details.card summary::-webkit-details-marker{color:var(--g3)}
+.cath{font-family:'Prompt',sans-serif;font-size:15px;font-weight:600;color:var(--g1);margin:2px 2px 8px;display:flex;align-items:center;gap:6px}
+.cath::after{content:'';flex:1;height:1px;background:var(--line)}
+.minis4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px}
+.minis3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.mini{background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:8px 4px;text-align:center}
+.mini .mv{font-family:'Prompt',sans-serif;font-weight:700;font-size:16px;color:var(--g1);line-height:1.2}
+.mini .ml{font-size:10px;color:var(--mut);margin-top:2px}
+.card.curp2{border:1.5px solid var(--g3);box-shadow:0 2px 14px rgba(29,122,95,.18)}
+html[data-theme=dark] .mini{background:#152019}
+tr.currow td{background:rgba(29,122,95,.08)}
+html[data-theme=dark] tr.currow td{background:rgba(143,215,187,.08)}
+.sim-bg{position:fixed;inset:0;background:rgba(8,18,14,.78);backdrop-filter:blur(4px);z-index:60;display:flex;align-items:center;justify-content:center}
+.phone{width:394px;height:min(820px,86vh);border:11px solid #17181a;border-radius:46px;overflow:hidden;background:#000;box-shadow:0 24px 70px rgba(0,0,0,.55),inset 0 0 0 2px #2c2e31}
+.phone iframe{width:100%;height:100%;border:none;background:#fff}
+@media(max-width:700px){.sim-btn{display:none}}
+/* Freeze หัวตาราง (แนวตั้ง) + คอลัมน์แรก (แนวนอน) ของทุกตารางยาว */
+.scrollx{max-height:calc(100vh - 235px);overflow:auto}
+.scrollx table.t thead th{position:sticky;top:0;z-index:4}
+.scrollx table.t thead th:first-child{top:0;z-index:6}
+/* Freeze คอลัมน์แรกของทุกตารางที่เลื่อนแนวนอน */
+.scrollx table.t th:first-child,.scrollx table.t td:first-child{position:sticky;left:0;z-index:2;background:var(--card);box-shadow:3px 0 5px rgba(15,50,40,.07)}
+.scrollx table.t th:first-child{background:#f0f4ef;z-index:3}
+.scrollx table.t tbody tr:hover td:first-child{background:#eef5f0}
+html[data-theme=dark] .scrollx table.t td:first-child{background:var(--card);box-shadow:3px 0 5px rgba(0,0,0,.35)}
+html[data-theme=dark] .scrollx table.t th:first-child{background:#20302a}
+html[data-theme=dark] .scrollx table.t tbody tr:hover td:first-child{background:#1f2d26}
+tr.sumrow td{font-weight:700;background:#f5efdb !important}
+html[data-theme=dark] tr.sumrow td{background:#2b2f20 !important}
+a,.plink{cursor:pointer}
+.plink{display:inline-flex;align-items:center;gap:5px;background:#e4f0e9;color:var(--g1);border:1px solid #c6ddcf;
+padding:4px 12px;border-radius:99px;font-weight:700;font-size:13px;white-space:nowrap;transition:all .12s}
+.plink::after{content:'›';font-weight:800;color:var(--g3)}
+tr.tap:hover .plink{background:var(--g3);color:#fff;border-color:var(--g3)}
+tr.tap:hover .plink::after{color:#fff}
+html[data-theme=dark] .plink{background:#20342a;color:#a8dac4;border-color:#2f4a3d}
+.pdot{display:inline-block;width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.5)}
+.theme-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:99px;
+width:34px;height:34px;font-size:16px;cursor:pointer;margin-left:8px;line-height:1}
+#printArea{display:none}
+@media print{
+ body>#root{display:none}
+ body{padding:0;background:#fff}
+ #printArea{display:block;font-size:13px}
+ .receipt{page-break-after:always;border:1px solid #000;padding:14px;margin-bottom:6px}
+ table.pt{width:100%;border-collapse:collapse;font-size:12px}
+ table.pt th,table.pt td{border:1px solid #444;padding:3px 5px}
+ table.pt td.r{text-align:right}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="printArea"></div>
+<script>
+// ===== Data Layer (repository over localStorage — สลับ Supabase ได้ภายหลัง) =====
+// (SEED_UNITS ถูกลบ — ข้อมูลจริงอยู่บนคลาวด์ ไม่ฝังในไฟล์อีกต่อไป)
+document.documentElement.dataset.theme=localStorage.getItem('rentalapp_theme')||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+// ---- Supabase (เฟส 2: ข้อมูลกลางบนคลาวด์ — publishable key ปลอดภัยเพราะมี RLS + ต้องล็อกอิน) ----
+const SUPA_URL='https://erpsngalvdewkiwdlvvz.supabase.co';
+const SUPA_KEY='sb_publishable_7dLWHeCYh5yV8vUuS55LBQ_lFb-G57W';
+const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+const DB_KEY='rentalapp_db_v1'; // localStorage = สำเนาฉุกเฉินในเครื่องเท่านั้น (แหล่งความจริงคือคลาวด์)
+const TABLES=['properties','units','tenants','contracts','deposits','rate_settings','meter_readings','bills','payments','expenses','staff','files','ledger'];
+const KV_KEYS=['_seq','_imp_onnut','_imp_mak','_seed_props5'];
+function blankDB(){const d={_seq:0};TABLES.forEach(t=>d[t]=[]);return d}
+let _db=null;
+function loadDB(){return _db}
+async function fetchAllRows(t){let out=[],from=0;const page=1000;
+ for(;;){const r=await supa.from(t).select('id,data').range(from,from+page-1);
+  if(r.error)throw new Error(t+': '+r.error.message);
+  out=out.concat(r.data.map(x=>x.data));if(r.data.length<page)break;from+=page}
+ return out}
+async function fetchDB(){
+ const d=blankDB();
+ const all=await Promise.all(TABLES.map(fetchAllRows));
+ TABLES.forEach((t,i)=>d[t]=all[i]);
+ const kv=await supa.from('kv').select('key,value');
+ if(kv.error)throw new Error('kv: '+kv.error.message);
+ kv.data.forEach(r=>{d[r.key]=r.value});
+ if(typeof d._seq!=='number')d._seq=0;
+ return d}
+// ---- บันทึกขึ้นคลาวด์อัตโนมัติแบบส่วนต่าง (ส่งเฉพาะแถวที่เปลี่ยน) ----
+let _snap={},_kvSnap={},_syncTimer=null,_syncing=false,_dirtyAgain=false;
+const SYNC={state:'idle'};
+function setSync(s){SYNC.state=s;window.dispatchEvent(new CustomEvent('syncstate'))}
+function takeSnap(){_snap={};TABLES.forEach(t=>{const m={};_db[t].forEach(r=>m[String(r.id)]=JSON.stringify(r));_snap[t]=m});
+ _kvSnap={};KV_KEYS.forEach(k=>_kvSnap[k]=JSON.stringify(_db[k]===undefined?null:_db[k]))}
+async function syncNow(){
+ if(_syncing){_dirtyAgain=true;return}
+ _syncing=true;setSync('saving');
+ try{
+  for(const t of TABLES){
+   const old=_snap[t]||{},cur={},ups=[];
+   _db[t].forEach(r=>{const k=String(r.id),s=JSON.stringify(r);cur[k]=s;if(old[k]!==s)ups.push({id:k,data:r})});
+   const dels=Object.keys(old).filter(k=>!(k in cur));
+   if(ups.length){const r=await supa.from(t).upsert(ups);if(r.error)throw new Error(t+': '+r.error.message)}
+   if(dels.length){const r=await supa.from(t).delete().in('id',dels);if(r.error)throw new Error(t+': '+r.error.message)}
+   _snap[t]=cur}
+  const kvUps=[];
+  KV_KEYS.forEach(k=>{const s=JSON.stringify(_db[k]===undefined?null:_db[k]);
+   if(_kvSnap[k]!==s){kvUps.push({key:k,value:_db[k]===undefined?null:_db[k]});_kvSnap[k]=s}});
+  if(kvUps.length){const r=await supa.from('kv').upsert(kvUps);if(r.error)throw new Error('kv: '+r.error.message)}
+  setSync('ok');
+ }catch(e){console.error('sync error',e);setSync('error')}
+ finally{_syncing=false;if(_dirtyAgain){_dirtyAgain=false;syncNow()}}
+}
+function unsynced(){return _syncing||SYNC.state==='error'||_syncTimer!=null}
+async function forceSync(){if(_syncTimer){clearTimeout(_syncTimer);_syncTimer=null}await syncNow()}
+function persist(){
+ try{localStorage.setItem(DB_KEY,JSON.stringify(_db))}catch(e){/* localStorage เต็มไม่เป็นไร — คลาวด์คือหลัก */}
+ if(_syncTimer)clearTimeout(_syncTimer);
+ _syncTimer=setTimeout(()=>{_syncTimer=null;syncNow()},400);
+}
+window.addEventListener('beforeunload',e=>{if(unsynced()){e.preventDefault();e.returnValue=''}});
+const Repo={
+ list(t,fn){const r=loadDB()[t];return fn?r.filter(fn):r.slice()},
+ get(t,id){return loadDB()[t].find(x=>x.id===id)||null},
+ create(t,row){const d=loadDB();row={...row,id:++d._seq};d[t].push(row);persist();return row},
+ update(t,id,patch){const d=loadDB();const i=d[t].findIndex(x=>x.id===id);if(i<0)return null;d[t][i]={...d[t][i],...patch};persist();return d[t][i]},
+ remove(t,id){const d=loadDB();d[t]=d[t].filter(x=>x.id!==id);persist()},
+ exportJSON(){return JSON.stringify(loadDB(),null,1)},
+ importJSON(s){const o=JSON.parse(s);if(!o.units||!o.bills)throw new Error('รูปแบบไฟล์ไม่ถูกต้อง');_db=o;fixup(_db);persist()},
+ reset(){_db=blankDB();seedMinimal(_db);persist()}
+};
+// ===== Helpers =====
+const MTH=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+function monthTH(iso){if(!iso)return'-';const[y,m]=iso.split('-');return MTH[+m-1]+' '+String(+y+543).slice(-2)}
+function monthTHfull(iso){if(!iso)return'-';const[y,m]=iso.split('-');return MTH[+m-1]+' '+(+y+543)}
+function addMonth(iso,n){let[y,m]=iso.split('-').map(Number);m+=n;while(m<1){m+=12;y--}while(m>12){m-=12;y++}return y+'-'+String(m).padStart(2,'0')}
+function nowMonth(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function today(){const d=new Date();return d.toISOString().slice(0,10)}
+function dateTH(iso){if(!iso)return'-';const[y,m,d]=iso.split('-');return +d+' '+MTH[+m-1]+' '+(+y+543)}
+function fmt(n){return (Math.round(n*100)/100).toLocaleString('th-TH')}
+function usage(a,b){a=+a||0;b=+b||0;if(b<a)b+=10000;return b-a} // มิเตอร์ 4 หลักวนรอบ
+// ===== สูตรคำนวณบิล (ยืนยันจากใบเสร็จจริง ก.ค.69 ครบ 59/59 ห้อง) =====
+function calcBill({rent,service,svcX=0,trash=0,othF=0,disc=0,wUnits,eUnits,rates,contractType,internet=0,area=0,other=0}){
+ const R=rates;
+ const minW=(R.waterMinBaht!=null)?R.waterMinBaht:(R.waterMinUnits||0)*R.waterRate; // ขั้นต่ำน้ำเป็นบาท: ไตรพร 42 / มักกะสัน 45 / อ่อนนุช 50
+ const H=Math.max(wUnits*R.waterRate, minW);
+ const I=H*(R.riskPct||0)/100, J=H*(R.profitPct||0)/100;
+ const K=contractType==='sor'?(R.waterFeeNew||0):(R.waterFeeOld||0);
+ const L=eUnits*R.elecRate, M=L*(R.riskPct||0)/100, N=L*(R.profitPct||0)/100;
+ const O=contractType==='sor'?(R.elecFeeNew||0):(R.elecFeeOld||0);
+ const cf=(R.customFees||[]).filter(x=>x.name&&+x.amount).map(x=>({name:x.name,amount:+x.amount}));
+ const cfSum=cf.reduce((s,x)=>s+x.amount,0);
+ const total=Math.floor(rent+service+svcX+trash+othF+disc+H+I+J+K+L+M+N+O+internet+area+other+cfSum); // ปัดเศษทิ้ง
+ return{rent,service,svcX,trash,othF,disc,wH:H,wI:I,wJ:J,wK:K,eL:L,eM:M,eN:N,eO:O,internet,area,other,cf,cfSum,total};
+}
+// ===== Seed ขั้นต่ำ: อาคารเปล่า 1 แห่ง (ใช้เมื่อคลาวด์ว่างและไม่มีข้อมูลเดิม) =====
+function seedMinimal(d){
+ const pid=++d._seq;
+ d.properties.push({id:pid,name:'อาคารของฉัน',type:'อพาร์ทเม้นท์',address:'',taxId:'',owner:'',phone:'',payAccount:'',note:'',manager:'',email:'',bank:'',bankAcc:'',bankName:'',promptpay:'',shortName:'',floors:'',roomsPlan:'',dueDay:5});
+ d.rate_settings.push({id:++d._seq,...defaultRates(pid)});
+}
+// ===== หลายทรัพย์สิน: ค่าตั้งต้น + migration + ตัวเลือกปัจจุบัน =====
+const PROP_TYPES=['อพาร์ทเม้นท์','หอพัก','เช่าอาคาร','เช่าป้าย','ร้านค้า','อื่นๆ'];
+function defaultRates(pid){return{propertyId:pid,waterRate:14,elecRate:4.5,waterMinUnits:3,riskPct:10,profitPct:10,
+ svcClean:150,svcAdmin:150,svcCable:80,svcTrash:50,svcRisk:200,svcRepair:100,serviceOld:430,serviceNew:730,
+ waterFeeOld:0,elecFeeOld:0,waterFeeNew:25,elecFeeNew:38}}
+// fixup: เติมฟิลด์ที่ขาดให้ข้อมูลเก่า (idempotent — รันซ้ำได้ไม่มีผลข้างเคียง)
+function fixup(d){
+ TABLES.forEach(t=>{if(!d[t])d[t]=[]});
+ if(typeof d._seq!=='number')d._seq=0;
+ d.properties.forEach(p=>{
+  ['manager','email','bank','bankAcc','bankName','promptpay','shortName'].forEach(k=>{if(p[k]===undefined)p[k]=''});
+  if(p.floors===undefined)p.floors='';if(p.roomsPlan===undefined)p.roomsPlan='';
+ });
+ d.properties.forEach((p,i)=>{if(!p.color)p.color=PROP_PALETTE[i%PROP_PALETTE.length];
+  if(p.dueDay===undefined)p.dueDay=5;
+  if(!p.manager)p.manager=p.owner||'';
+ });
+ d.rate_settings.forEach(r=>{if(r.waterMinBaht===undefined)r.waterMinBaht=(r.waterMinUnits||0)*r.waterRate;if(r.customFees===undefined)r.customFees=[]});
+}
+// (SEED_ONNUT ถูกลบ — ข้อมูลจริงอยู่บนคลาวด์ ไม่ฝังในไฟล์อีกต่อไป)
+// (SEED_MAK ถูกลบ — ข้อมูลจริงอยู่บนคลาวด์)
+// (โค้ดนำเข้าข้อมูลตัวอย่าง/migration เฟส 1 ถูกลบออกแล้ว — เฟส 2 ข้อมูลจริงอยู่บนคลาวด์ทั้งหมด)
+let CUR_PID=+localStorage.getItem('rentalapp_pid')||0;
+function curPid(){const d=loadDB();if(!d.properties.find(p=>p.id===CUR_PID))CUR_PID=d.properties[0].id;return CUR_PID}
+function setCurPid(id){CUR_PID=+id;localStorage.setItem('rentalapp_pid',CUR_PID)}
+function curProp(){return Repo.get('properties',curPid())||{}}
+function curRates(){return Repo.list('rate_settings',r=>r.propertyId===curPid())[0]||Repo.list('rate_settings')[0]}
+function unitsOfCur(){return Repo.list('units',u=>u.propertyId===curPid())}
+const PROP_PALETTE=['#14614a','#1d4f7a','#5b4a8f','#b05a2f','#4a5a64','#8a6a2a'];
+function shade(hex,p){const n=parseInt(hex.slice(1),16);let r=n>>16,g=(n>>8)&255,b=n&255;
+ if(p<0){r*=1+p;g*=1+p;b*=1+p}else{r+=(255-r)*p;g+=(255-g)*p;b+=(255-b)*p}
+ return '#'+[r,g,b].map(x=>Math.round(Math.min(255,Math.max(0,x))).toString(16).padStart(2,'0')).join('')}
+function propIcon(t){return t==='เช่าป้าย'?'🪧':t==='เช่าอาคาร'?'🏬':t==='ร้านค้า'?'🏪':'🏢'}
+</script>
+<script type="text/babel">
+const {useState,useMemo,useEffect}=React;
+let LAST_MONTH=nowMonth(); // จำเดือนที่เลือกล่าสุด (กัน state รีเซ็ตตอน refresh)
+let LAST_UTIL='water'; // จำชนิดมิเตอร์ที่เลือก (น้ำ/ไฟ) กัน state รีเซ็ตตอน refresh
+function fileToDataUrl(file){return new Promise(res=>{const rd=new FileReader();rd.onload=()=>res(rd.result);rd.readAsDataURL(file)})}
+async function shrinkImage(dataUrl){
+ if(!dataUrl.startsWith('data:image'))return dataUrl;
+ const img=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.src=dataUrl});
+ const max=1600;if(Math.max(img.width,img.height)<=max)return dataUrl;
+ const k=max/Math.max(img.width,img.height);
+ const cv=document.createElement('canvas');cv.width=Math.round(img.width*k);cv.height=Math.round(img.height*k);
+ cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+ return cv.toDataURL('image/jpeg',.82);
+}
+function viewFile(fl){
+ const arr=fl.data.split(',');const mime=(arr[0].match(/data:(.*?);/)||[])[1]||'application/octet-stream';
+ const bin=atob(arr[1]);const u8=new Uint8Array(bin.length);
+ for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+ window.open(URL.createObjectURL(new Blob([u8],{type:mime})),'_blank');
+}
+let OPEN_TENANT=null;let OPEN_UNIT=null; // กดชื่อผู้เช่าจากหน้าห้อง → เปิดดูในหน้าผู้เช่า
+const STD_AMEN=['แอร์','เตียง','ตู้เสื้อผ้า','โต๊ะเครื่องแป้ง'];
+function useMonth(){const[m,setM]=useState(LAST_MONTH);return[m,v=>{LAST_MONTH=v;setM(v)}]}
+function useUtil(){const[u,setU]=useState(LAST_UTIL);return[u,v=>{LAST_UTIL=v;setU(v)}]}
+const PAGES=[
+ {k:'home',ic:'🏠',l:'หน้าแรก'},{k:'units',ic:'🚪',l:'ห้อง'},{k:'tenants',ic:'👤',l:'ผู้เช่า'},
+ {k:'meters',ic:'⚡',l:'จดมิเตอร์'},{k:'bills',ic:'🧾',l:'บิล'},{k:'expenses',ic:'💸',l:'รับ/จ่าย'},
+ {k:'summary',ic:'📋',l:'สรุป'},{k:'settings',ic:'⚙️',l:'ตั้งค่า'}];
+function Modal({title,onClose,children}){
+ return <div className="modal-bg" onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
+  <div className="modal">
+   <div className="row" style={{justifyContent:'space-between',marginBottom:10}}>
+    <b style={{fontSize:16,color:'var(--c1)'}}>{title}</b>
+    <button className="btn sm gray" onClick={onClose}>✕ ปิด</button>
+   </div>{children}</div></div>;
+}
+function F({l,children}){return <label className="f"><b>{l}</b>{children}</label>}
+function statusTag(s){const m={'มีผู้เช่า':'g','ว่าง':'b','จอง':'o','ปิดปรับปรุง':'r','ค้างชำระ':'r','ชำระแล้ว':'g','ใช้งาน':'g','สิ้นสุด':'b','ยกเลิก':'b','ถือไว้':'g','คืนแล้ว':'b','ริบ':'r'};
+ const col={g:'var(--ok)',o:'var(--warn)',r:'var(--red)',b:'var(--mut)'}[m[s]||'b'];
+ return <b style={{color:col,fontWeight:600}}>{s}</b>}
+function activeContract(unitId){return Repo.list('contracts',c=>c.unitId===unitId&&c.status==='ใช้งาน')[0]||null}
+function contractTag(st){return st==='ใช้งาน'?<b style={{color:'var(--ok)',fontWeight:600}}>ยังไม่สิ้นสุด</b>
+ :st==='สิ้นสุด'?<b style={{color:'var(--mut)',fontWeight:600}}>หมดอายุสัญญา</b>
+ :st==='ยกเลิก'?<b style={{color:'var(--mut)',fontWeight:600}}>ยกเลิกสัญญา</b>:statusTag(st)}
+function isOccupied(unitId){return !!activeContract(unitId)} // ไม่มีชื่อผู้เช่า = ไม่มีผู้เช่า
+function tenantName(id){const t=id&&Repo.get('tenants',id);return t?t.name:'-'}
+
+// ===== ฟอร์มทรัพย์สิน (เพิ่ม/แก้ไข/ลบ) =====
+function PropertyModal({init,onClose,refresh}){
+ const [p,setP]=useState({name:'',shortName:'',type:'อพาร์ทเม้นท์',floors:'',roomsPlan:'',address:'',owner:'',taxId:'',manager:'',phone:'',email:'',
+  bank:'',bankAcc:'',bankName:'',promptpay:'',dueDay:5,payAccount:'',note:'',...init});
+ const unitCount=p.id?Repo.list('units',u=>u.propertyId===p.id).length:0;
+ const save=()=>{if(!p.name){alert('ใส่ชื่อทรัพย์สินก่อน');return}
+  const{id,...rest}=p;rest.dueDay=+rest.dueDay||5;rest.floors=+rest.floors||'';rest.roomsPlan=+rest.roomsPlan||'';
+  if(id)Repo.update('properties',id,rest);
+  else{const p2=Repo.create('properties',rest);Repo.create('rate_settings',defaultRates(p2.id));setCurPid(p2.id)}
+  onClose();refresh()};
+ const del=()=>{
+  if(Repo.list('properties').length<=1){alert('ลบไม่ได้: ต้องมีทรัพย์สินอย่างน้อย 1 แห่ง');return}
+  if(unitCount>0){alert('ลบไม่ได้: ยังมี '+unitCount+' หน่วยเช่าอยู่ในทรัพย์สินนี้ — ต้องลบ/ย้ายห้องออกก่อน เพื่อป้องกันข้อมูลบิลเสียหาย');return}
+  if(!confirm('ลบ "'+p.name+'" ถาวร? (อัตราค่าน้ำ-ไฟของแห่งนี้จะถูกลบด้วย)'))return;
+  Repo.list('rate_settings',r=>r.propertyId===p.id).forEach(r=>Repo.remove('rate_settings',r.id));
+  Repo.remove('properties',p.id);
+  if(curPid()===p.id)setCurPid(Repo.list('properties')[0].id);
+  onClose();refresh()};
+ const I=(k,l)=><F l={l}><input value={p[k]||''} onChange={e=>setP({...p,[k]:e.target.value})}/></F>;
+ return <Modal title={p.id?('แก้ไขทรัพย์สิน — '+p.name):'เพิ่มทรัพย์สินใหม่'} onClose={onClose}>
+  <div className="grid2">
+   {I('name','ชื่อทรัพย์สิน *')}
+   {I('shortName','ชื่อย่อ (แสดงในเมนู)')}
+   <F l="ประเภท"><select value={p.type} onChange={e=>setP({...p,type:e.target.value})}>
+    {PROP_TYPES.map(t=><option key={t}>{t}</option>)}</select></F>
+   <F l="จำนวนชั้น"><input type="number" value={p.floors} onChange={e=>setP({...p,floors:e.target.value})}/></F>
+   <F l="จำนวนห้องเช่า"><input type="number" value={p.roomsPlan} onChange={e=>setP({...p,roomsPlan:e.target.value})}/></F>
+  </div>
+  {I('address','ที่อยู่')}
+  <div className="grid2">
+   {I('owner','เจ้าของ / นิติบุคคล')}
+   {I('taxId','เลขผู้เสียภาษี')}
+   {I('manager','ผู้ดูแล')}
+   {I('phone','โทรผู้ดูแล')}
+   {I('email','อีเมล / LINE')}
+   <F l="ครบกำหนดชำระภายในวันที่ (1-5)"><input type="number" value={p.dueDay} onChange={e=>setP({...p,dueDay:e.target.value})}/></F>
+  </div>
+  <div style={{background:'rgba(201,162,39,.08)',border:'1px dashed var(--gold)',borderRadius:12,padding:'10px 12px',marginBottom:10}}>
+   <b style={{fontSize:13}}>💳 บัญชีรับเงิน (แสดงในใบเสร็จ + ทำ QR เฟส 2)</b>
+   <div className="grid2" style={{marginTop:8}}>
+    {I('bank','ธนาคาร')}
+    {I('bankAcc','เลขบัญชี')}
+    {I('bankName','ชื่อบัญชี')}
+    {I('promptpay','พร้อมเพย์ (เบอร์/เลขภาษี)')}
+   </div>
+  </div>
+  <F l="สีประจำอาคาร (ธีมของหน้าอาคารนี้)"><div className="row" style={{alignItems:'center'}}>
+   {PROP_PALETTE.map(c=><span key={c} onClick={()=>setP({...p,color:c})}
+    style={{width:30,height:30,borderRadius:'50%',background:c,cursor:'pointer',
+     border:p.color===c?'3px solid var(--gold)':'2px solid rgba(255,255,255,.7)',boxShadow:'0 1px 4px rgba(0,0,0,.3)'}}/>)}
+   <input type="color" value={p.color||'#14614a'} onChange={e=>setP({...p,color:e.target.value})}
+    style={{width:46,height:34,padding:2,borderRadius:8}} title="เลือกสีเอง"/>
+  </div></F>
+  {I('note','หมายเหตุ')}
+  {p.id?<div className="mut" style={{marginBottom:8}}>หน่วยเช่าในทรัพย์สินนี้: {unitCount} · ลบได้เมื่อไม่มีหน่วยเช่า</div>:null}
+  <div className="row">
+   <button className="btn" onClick={save}>💾 บันทึก</button>
+   {p.id&&<button className="btn red" onClick={del}>🗑 ลบทรัพย์สิน</button>}
+  </div>
+ </Modal>;
+}
+// ===== หน้าแรก: สรุปทุกอาคาร แยก 4 หมวด =====
+function ExpenseModal({pid,onClose,refresh}){
+ const [e,setE]=useState({date:today(),cat:'ซ่อมแซม',amount:'',payee:'',note:''});
+ const p=Repo.get('properties',pid)||{};
+ return <Modal title={'บันทึกรายจ่าย — '+p.name} onClose={onClose}>
+  <div className="grid2">
+   <F l="วันที่"><input type="date" value={e.date} onChange={x=>setE({...e,date:x.target.value})}/></F>
+   <F l="หมวด"><select value={e.cat} onChange={x=>setE({...e,cat:x.target.value})}>
+    {['เงินเดือนแม่บ้าน','ซ่อมแซม','ค่าน้ำ-ไฟจ่าย กปน/กฟน','วัสดุ/อุปกรณ์','อื่นๆ'].map(c=><option key={c}>{c}</option>)}</select></F>
+   <F l="จำนวนเงิน (บาท) *"><input type="number" value={e.amount} onChange={x=>setE({...e,amount:x.target.value})}/></F>
+   <F l="จ่ายให้ (ร้าน/ชื่อ)"><input value={e.payee} onChange={x=>setE({...e,payee:x.target.value})}/></F>
+  </div>
+  <F l="หมายเหตุ"><input value={e.note} onChange={x=>setE({...e,note:x.target.value})}/></F>
+  <button className="btn" onClick={()=>{if(!+e.amount){alert('ใส่จำนวนเงิน');return}
+   Repo.create('expenses',{propertyId:pid,date:e.date,cat:e.cat,amount:+e.amount,payee:e.payee,note:e.note});
+   onClose();refresh()}}>💾 บันทึกรายจ่าย</button>
+ </Modal>;
+}
+function RatesCard({refresh}){
+ const r=curRates()||{};
+ const [rt,setRt]=useState(null); // null = โหมดดู
+ const save=()=>{const o={...rt};Object.keys(o).forEach(k=>{if(k!=='id'&&k!=='propertyId'&&k!=='customFees')o[k]=+o[k]||0});
+  o.customFees=(o.customFees||[]).filter(x=>x.name&&x.name.trim()&&+x.amount).map(x=>({name:x.name.trim(),amount:+x.amount}));
+  Repo.update('rate_settings',r.id,o);setRt(null);
+  alert('บันทึกอัตราแล้ว — ใช้กับบิลที่ออกใหม่เท่านั้น บิลเก่าไม่เปลี่ยน (snapshot)');refresh()};
+ const RF=(k,l)=><F l={l}><input type="number" step="any" value={rt[k]} onChange={e=>setRt({...rt,[k]:e.target.value})}/></F>;
+ const Row=({l,v})=><div className="step" style={{padding:'6px 0'}}><div style={{minWidth:170}} className="mut">{l}</div><div style={{flex:1}}><b>{v}</b></div></div>;
+ if(!rt)return <div className="card"><h2>อัตราค่าน้ำ-ไฟ / ค่าบริการ ของอาคารนี้</h2>
+  <Row l="ค่าน้ำ" v={r.waterRate+' บาท/หน่วย (ขั้นต่ำ '+fmt(r.waterMinBaht||0)+' บาท)'}/>
+  <Row l="ค่าไฟ" v={r.elecRate+' บาท/หน่วย'}/>
+  <Row l="บวกเพิ่มจากค่าน้ำ/ไฟ" v={((r.riskPct||0)+(r.profitPct||0))>0
+    ?('ความเสี่ยงจัดเก็บ '+(r.riskPct||0)+'% + กำไร '+(r.profitPct||0)+'% (รวม '+((r.riskPct||0)+(r.profitPct||0))+'%)')
+    :'ไม่มี'}/>
+  <Row l="ค่าบริการ สัญญาเก่า" v={fmt(r.serviceOld||0)+' บาท/เดือน'}/>
+  <Row l="ค่าบริการ สัญญา สคบ." v={fmt(r.serviceNew||0)+' บาท/เดือน'}/>
+  <Row l="ค่าดำเนินการ สคบ." v={'น้ำ '+fmt(r.waterFeeNew||0)+' / ไฟ '+fmt(r.elecFeeNew||0)+' บาท/เดือน'}/>
+  {(r.customFees||[]).map((x,i)=><Row key={i} l={'＋ '+x.name} v={fmt(x.amount)+' บาท/เดือน (ทุกบิล)'}/>)}
+  <div style={{marginTop:10}}><button className="btn" onClick={()=>setRt({...r,customFees:(r.customFees||[]).map(x=>({...x}))})}>✏️ แก้ไขอัตรา</button></div></div>;
+ return <div className="card"><h2>แก้ไขอัตรา — {curProp().name}</h2>
+  <div className="grid2">
+   {RF('waterRate','อัตราน้ำ (บาท/หน่วย)')}{RF('elecRate','อัตราไฟ (บาท/หน่วย)')}
+   {RF('waterMinBaht','ค่าน้ำขั้นต่ำ (บาท)')}{RF('riskPct','% ความเสี่ยงจัดเก็บ')}
+   {RF('profitPct','% กำไร')}{RF('serviceOld','ค่าบริการสัญญาเก่า')}
+   {RF('serviceNew','ค่าบริการสัญญา สคบ.')}{RF('waterFeeNew','ค่าดำเนินการประปา (สคบ.)')}
+   {RF('elecFeeNew','ค่าดำเนินการไฟฟ้า (สคบ.)')}
+  </div>
+  <div style={{border:'1px dashed var(--line)',borderRadius:12,padding:'10px 12px',marginBottom:10}}>
+   <b style={{fontSize:13}}>ค่าบริการอื่นๆ ของอาคารนี้ (บวกเข้าทุกบิล — เพิ่มได้ตามกรณี)</b>
+   {(rt.customFees||[]).map((x,i)=><div className="row" key={i} style={{marginTop:8,flexWrap:'nowrap'}}>
+    <input placeholder="ชื่อรายการ เช่น ค่ากล้องวงจรปิด" value={x.name}
+     onChange={e=>{const a=(rt.customFees||[]).map(y=>({...y}));a[i].name=e.target.value;setRt({...rt,customFees:a})}}/>
+    <input type="number" placeholder="บาท" style={{maxWidth:110}} value={x.amount}
+     onChange={e=>{const a=(rt.customFees||[]).map(y=>({...y}));a[i].amount=e.target.value;setRt({...rt,customFees:a})}}/>
+    <button className="btn sm red" onClick={()=>{const a=(rt.customFees||[]).filter((_,j)=>j!==i);setRt({...rt,customFees:a})}}>✕</button>
+   </div>)}
+   <div style={{marginTop:8}}><button className="btn sm line" onClick={()=>setRt({...rt,customFees:[...(rt.customFees||[]),{name:'',amount:''}]})}>＋ เพิ่มรายการ</button></div>
+  </div>
+  <div className="mut" style={{marginBottom:8}}>มีผลเฉพาะบิลที่ออกใหม่หลังบันทึก — บิลเก่าใช้อัตรา ณ วันออกบิล (snapshot) เสมอ</div>
+  <div className="row">
+   <button className="btn" onClick={save}>💾 บันทึกอัตรา</button>
+   <button className="btn gray" onClick={()=>setRt(null)}>↩️ ยกเลิก ไม่บันทึก</button>
+  </div></div>;
+}
+function PropertyPage({refresh,go}){
+ const [pm,setPm]=useState(null);
+ const p=curProp();const r=curRates()||{};
+ const us=unitsOfCur();
+ const uset=new Set(us.map(u=>u.id));
+ const unpaid=Repo.list('bills',b=>b.status==='ค้างชำระ'&&uset.has(b.unitId));
+ const Row=({l,v})=><div className="step" style={{padding:'6px 0'}}><div style={{minWidth:130}} className="mut">{l}</div><div style={{flex:1}}>{v||<span className="mut">— ยังไม่กรอก —</span>}</div></div>;
+ return <div>
+  <div className="row" style={{marginBottom:10,justifyContent:'space-between'}}>
+   <button className="btn sm gray" onClick={()=>go('home')}>← กลับหน้าหลัก</button>
+   <span className="tag g">อาคารทำงานปัจจุบัน</span>
+  </div>
+  <div className="hero" style={{marginBottom:13}}>
+   <div className="hero-name">{propIcon(p.type)} {p.name}</div>
+   <div className="hero-sub">{p.type} · {us.length} หน่วยเช่า · ค้างชำระ {unpaid.length} ใบ ({fmt(unpaid.reduce((s,b)=>s+b.total,0))} บาท)</div>
+  </div>
+  <div className="card"><h2>ข้อมูลพื้นฐาน</h2>
+   <Row l="ชื่อย่อ" v={p.shortName}/>
+   <Row l="จำนวนชั้น" v={p.floors?String(p.floors):''}/>
+   <Row l="จำนวนห้อง" v={p.roomsPlan
+     ?(p.roomsPlan+' ห้อง (กรอกในระบบแล้ว '+us.length+(+p.roomsPlan!==us.length?' ⚠️ ยังไม่ครบ':' ✓')+')')
+     :(us.length?us.length+' ห้องในระบบ':'')}/>
+   <Row l="ที่อยู่" v={p.address}/>
+   <Row l="เจ้าของ/นิติบุคคล" v={p.owner}/>
+   <Row l="เลขผู้เสียภาษี" v={p.taxId}/>
+   <Row l="ผู้ดูแล" v={p.manager?(p.manager+(p.phone?' · โทร '+p.phone:'')):''}/>
+   <Row l="อีเมล / LINE" v={p.email}/>
+   <Row l="บัญชีรับเงิน" v={p.bank?(p.bank+' '+(p.bankAcc||'')+(p.bankName?' ('+p.bankName+')':'')):''}/>
+   <Row l="พร้อมเพย์" v={p.promptpay}/>
+   <Row l="ชำระภายในวันที่" v={String(p.dueDay||5)}/>
+   <Row l="หมายเหตุ" v={p.note}/>
+   <div style={{marginTop:10}}><button className="btn" onClick={()=>setPm({...p})}>✏️ แก้ไขข้อมูลอาคาร</button></div>
+  </div>
+  <RatesCard refresh={refresh}/>
+  <div className="card"><h2>ทางลัดของอาคารนี้</h2>
+   <div className="row">
+    <button className="btn" onClick={()=>go('units')}>🚪 ห้องเช่า ({us.length})</button>
+    <button className="btn" onClick={()=>go('meters')}>⚡ จดมิเตอร์</button>
+    <button className="btn" onClick={()=>go('bills')}>🧾 บิล</button>
+    <button className="btn" onClick={()=>go('expenses')}>💸 ค่าใช้จ่าย</button>
+    <button className="btn" onClick={()=>go('summary')}>📋 สรุปเดือน</button>
+   </div></div>
+  <div className="card"><h2>เขตอันตราย</h2>
+   {us.length===0
+    ?<div className="mut" style={{marginBottom:8}}>อาคารนี้ไม่มีห้องเช่าในระบบ ลบได้ทันที</div>
+    :<div className="mut" style={{marginBottom:8}}>อาคารนี้มี {us.length} ห้อง — การลบจะพาข้อมูลข้างในไปทั้งหมด (ห้อง/บิล/สัญญา/มิเตอร์/รายจ่าย) แนะนำกด "ส่งออกข้อมูล" ในหน้าตั้งค่าเก็บ backup ก่อน</div>}
+   <button className="btn red" onClick={()=>{
+    if(Repo.list('properties').length<=1){alert('ต้องมีทรัพย์สินอย่างน้อย 1 แห่ง');return}
+    const uids=new Set(us.map(u=>u.id));
+    const bs=Repo.list('bills',b=>uids.has(b.unitId));
+    const cs=Repo.list('contracts',c=>uids.has(c.unitId));
+    const exps=Repo.list('expenses',x=>x.propertyId===p.id);
+    if(us.length>0){
+     if(!confirm('จะลบ "'+p.name+'" พร้อมข้อมูลทั้งหมด:\n· '+us.length+' ห้อง\n· '+bs.length+' บิล\n· '+cs.length+' สัญญา (+มัดจำ/ประกัน)\n· มิเตอร์และรายจ่ายทั้งหมดของอาคารนี้\n\nย้อนกลับไม่ได้! ดำเนินการต่อ?'))return;
+     const typed=prompt('เพื่อยืนยัน พิมพ์ชื่ออาคารให้ตรง:\n'+p.name);
+     if(typed!==p.name){alert('ชื่อไม่ตรง — ยกเลิกการลบ');return}
+    }else{
+     if(!confirm('ลบ "'+p.name+'" ถาวร? ย้อนกลับไม่ได้'))return;
+    }
+    const bids=new Set(bs.map(b=>b.id));
+    Repo.list('payments',x=>bids.has(x.billId)).forEach(x=>Repo.remove('payments',x.id));
+    bs.forEach(b=>Repo.remove('bills',b.id));
+    Repo.list('meter_readings',x=>uids.has(x.unitId)).forEach(x=>Repo.remove('meter_readings',x.id));
+    const cids=new Set(cs.map(c=>c.id));
+    Repo.list('deposits',d=>cids.has(d.contractId)).forEach(d=>Repo.remove('deposits',d.id));
+    Repo.list('files',x=>cids.has(x.contractId)).forEach(x=>Repo.remove('files',x.id));
+    const tids=[...new Set(cs.map(c=>c.tenantId).filter(Boolean))];
+    cs.forEach(c=>Repo.remove('contracts',c.id));
+    tids.forEach(t=>{if(Repo.list('contracts',c=>c.tenantId===t).length===0)Repo.remove('tenants',t)});
+    exps.forEach(x=>Repo.remove('expenses',x.id));
+    us.forEach(u=>Repo.remove('units',u.id));
+    Repo.list('rate_settings',x=>x.propertyId===p.id).forEach(x=>Repo.remove('rate_settings',x.id));
+    Repo.remove('properties',p.id);
+    setCurPid(Repo.list('properties')[0].id);go('home');refresh();
+   }}>🗑 ลบทรัพย์สินนี้{us.length>0?' (พร้อมข้อมูลทั้งหมดข้างใน)':''}</button>
+  </div>
+  {pm&&<PropertyModal key={pm.id} init={pm} onClose={()=>setPm(null)} refresh={refresh}/>}
+ </div>;
+}
+function Home({refresh,go}){
+ const [pm,setPm]=useState(null);
+ const m=nowMonth();
+ const props=Repo.list('properties');
+ const info=p=>{
+  const us=Repo.list('units',u=>u.propertyId===p.id);
+  const uset=new Set(us.map(u=>u.id));
+  const unpaidBills=Repo.list('bills',b=>b.status==='ค้างชำระ'&&uset.has(b.unitId));
+  const payments=Repo.list('payments',x=>x.date&&x.date.slice(0,7)===m&&uset.has((Repo.get('bills',x.billId)||{}).unitId));
+  const collected=payments.reduce((s,x)=>s+x.amount,0);
+  const expense=Repo.list('expenses',x=>x.propertyId===p.id&&x.date&&x.date.slice(0,7)===m).reduce((s,x)=>s+x.amount,0);
+  return {units:us.length,occ:us.filter(u=>isOccupied(u.id)).length,
+   unpaidRooms:new Set(unpaidBills.map(b=>b.unitId)).size,
+   unpaidSum:unpaidBills.reduce((s,b)=>s+b.total,0),
+   collected,expense,profit:collected-expense};
+ };
+ const apts=props.filter(p=>p.type==='อพาร์ทเม้นท์'||p.type==='หอพัก');
+ const blds=props.filter(p=>p.type==='เช่าอาคาร');
+ const signs=props.filter(p=>p.type==='เช่าป้าย');
+ const others=props.filter(p=>!apts.includes(p)&&!blds.includes(p)&&!signs.includes(p));
+ const rows=apts.map(p=>({p,...info(p)}));
+ const tot=k=>rows.reduce((s,r)=>s+r[k],0);
+ const z=v=>v===0?'-':v;
+ const zm=v=>v===0?'-':fmt(v);
+
+ const money=(v,c)=><td className="r" style={v!==0&&c?{color:c,fontWeight:600}:{}}>{zm(v)}</td>;
+ const profitStyle=v=>v<0?{color:'var(--red)',fontWeight:700}:v>0?{color:'var(--ok)',fontWeight:700}:{};
+ const simpleTable=list=>list.length===0
+  ?<div className="card mut" style={{padding:'10px 16px'}}>— ยังไม่มี (เตรียมหมวดไว้แล้ว) —</div>
+  :<div className="card" style={{padding:'8px 12px'}}><div className="scrollx"><table className="t">
+   <thead><tr><th>ชื่อ</th><th className="r">หน่วยเช่า</th><th>สถานะ</th></tr></thead>
+   <tbody>{list.map(p=>{const n=Repo.list('units',u=>u.propertyId===p.id).length;
+    return <tr key={p.id} className="tap" onClick={()=>{setCurPid(p.id);go('prop')}}>
+     <td><span className="plink"><span className="pdot" style={{background:p.color||'#14614a'}}/>{propIcon(p.type)} {p.shortName||p.name}</span></td>
+     <td className="r">{n===0?'-':n}</td><td className="mut">{p.note||'-'}</td></tr>})}
+   </tbody></table></div></div>;
+ return <div>
+  <div className="cath">🏢 อพาร์ทเมนท์ ({apts.length}) — เดือน {monthTHfull(m)}</div>
+  <div className="card" style={{padding:'8px 12px'}}><div className="scrollx"><table className="t">
+   <thead><tr><th>อาคาร</th><th className="r">ห้อง</th><th className="r">เช่า/ว่าง</th>
+    <th className="r">จ่าย/ค้าง</th><th className="r">รายรับ</th><th className="r">รายจ่าย</th><th className="r">กำไร</th><th className="r">ลูกหนี้</th></tr></thead>
+   <tbody>
+    {rows.map(r=>{const p=r.p;
+     return <tr key={p.id} className="tap" onClick={()=>{setCurPid(p.id);go('prop')}}>
+      <td><span className="plink"><span className="pdot" style={{background:p.color||'#14614a'}}/>{p.shortName||p.name}</span>{p.note?<div className="mut">{p.note}</div>:null}</td>
+      <td className="r">{z(r.units)}</td>
+      <td className="r"><span style={r.occ>0?{color:'var(--ok)',fontWeight:700}:{}}>{z(r.occ)}</span><span className="mut">/</span><span style={r.units-r.occ>0?{color:'var(--red)',fontWeight:700}:{}}>{z(r.units-r.occ)}</span></td>
+      <td className="r"><span style={Math.max(r.occ-r.unpaidRooms,0)>0?{color:'var(--ok)',fontWeight:700}:{}}>{z(Math.max(r.occ-r.unpaidRooms,0))}</span><span className="mut">/</span><span style={r.unpaidRooms>0?{color:'var(--red)',fontWeight:700}:{}}>{z(r.unpaidRooms)}</span></td>
+      {money(r.collected,'var(--ok)')}{money(r.expense,'var(--red)')}
+      <td className="r" style={profitStyle(r.profit)}>{zm(r.profit)}</td>
+      <td className="r" style={r.unpaidSum>0?{color:'var(--red)'}:{}}>{zm(r.unpaidSum)}</td></tr>})}
+    <tr className="sumrow">
+     <td>รวม</td><td className="r">{z(tot('units'))}</td>
+     <td className="r"><span style={tot('occ')>0?{color:'var(--ok)'}:{}}>{z(tot('occ'))}</span><span className="mut">/</span><span style={tot('units')-tot('occ')>0?{color:'var(--red)'}:{}}>{z(tot('units')-tot('occ'))}</span></td>
+     <td className="r"><span style={Math.max(tot('occ')-tot('unpaidRooms'),0)>0?{color:'var(--ok)'}:{}}>{z(Math.max(tot('occ')-tot('unpaidRooms'),0))}</span><span className="mut">/</span><span style={tot('unpaidRooms')>0?{color:'var(--red)'}:{}}>{z(tot('unpaidRooms'))}</span></td>
+     <td className="r" style={tot('collected')>0?{color:'var(--ok)'}:{}}>{zm(tot('collected'))}</td>
+     <td className="r" style={tot('expense')>0?{color:'var(--red)'}:{}}>{zm(tot('expense'))}</td>
+     <td className="r" style={profitStyle(tot('profit'))}>{zm(tot('profit'))}</td>
+     <td className="r" style={tot('unpaidSum')>0?{color:'var(--red)'}:{}}>{zm(tot('unpaidSum'))}</td></tr>
+   </tbody></table></div>
+  </div>
+  <div className="cath">🏬 อาคาร ({blds.length})</div>
+  {simpleTable(blds)}
+  <div className="cath">🪧 ป้าย ({signs.length})</div>
+  {simpleTable(signs)}
+  <div className="cath">📦 อื่น ๆ ({others.length})</div>
+  {simpleTable(others)}
+  <div style={{margin:'4px 0 14px'}}><button className="btn" onClick={()=>setPm({})}>＋ เพิ่มทรัพย์สิน</button></div>
+  {pm&&<PropertyModal key={pm.id||'new'} init={pm} onClose={()=>setPm(null)} refresh={refresh}/>}
+ </div>;
+}
+// ===== ห้องเช่า =====
+function Units({refresh,go}){
+ const [payU,setPayU]=useState(null); // กรอกวันที่จ่าย/ค้างจ่าย manual
+ const [edit,setEdit]=useState(()=>{
+  if(OPEN_UNIT){const u=Repo.get('units',OPEN_UNIT);OPEN_UNIT=null;
+   if(u){const cc=activeContract(u.id);return{...u,...(cc?{rent:cc.rent,service:cc.service}:{})}}}
+  return null});
+ const [view,setView]=useState(null);
+ const [viewTen,setViewTen]=useState(null);
+ const [q,setQ]=useState('');
+ const [tsel,setTsel]=useState('0');
+ const [tnew,setTnew]=useState('');
+ const assignTenant=()=>{
+  let tid=+tsel||0;
+  if(tnew.trim()){const t=Repo.create('tenants',{name:tnew.trim(),idCard:'',phone:'',line:'',addr:'',emergency:'',job:'',vehicle:'',note:'เพิ่มจากหน้าห้อง'});tid=t.id}
+  if(!tid){alert('เลือกผู้เช่า หรือพิมพ์ชื่อผู้เช่าใหม่ก่อน');return}
+  Repo.create('contracts',{unitId:edit.id,tenantId:tid,type:edit.contractType||'old',no:'',start:today(),end:'',
+   rent:+edit.rent||0,service:+edit.service||0,dueDay:5,status:'ใช้งาน',signDate:today(),note:'บันทึกเข้าพักจากหน้าห้อง'});
+  Repo.update('units',edit.id,{status:'มีผู้เช่า'});
+  setTsel('0');setTnew('');setEdit(null);refresh()};
+ const moveOut=(c)=>{
+  if(!confirm('ย้ายออก: สิ้นสุดสัญญาของ '+tenantName(c.tenantId)+' ห้อง '+edit.code+'?'))return;
+  Repo.update('contracts',c.id,{status:'สิ้นสุด',end:today()});
+  Repo.update('units',edit.id,{status:'ว่าง'});
+  setEdit(null);refresh()};
+ const units=unitsOfCur().filter(u=>!q||u.code.includes(q)).sort((a,b)=>a.code.localeCompare(b.code));
+ const floors=[...new Set(units.map(u=>u.floor))].sort();
+ const save=()=>{const{id,...rest}=edit;rest.rent=+rest.rent||0;rest.service=+rest.service||0;
+  if(rest._amenOther!==undefined){
+   const std=(rest.amenities||[]).filter(x=>STD_AMEN.includes(x));
+   rest.amenities=[...std,...rest._amenOther.split(',').map(x=>x.trim()).filter(Boolean)];
+  }
+  delete rest._amenOther;
+  if(id){const cc=activeContract(id);if(cc){rest.rent=cc.rent;rest.service=cc.service}}rest.areaFee=+rest.areaFee||0;rest.internet=+rest.internet||0;rest.serviceExtra=+rest.serviceExtra||0;rest.trash=+rest.trash||0;rest.otherFee=+rest.otherFee||0;rest.discount=+rest.discount||0;
+  id?Repo.update('units',id,rest):Repo.create('units',{...rest,propertyId:curPid(),hasWaterMeter:true,hasElecMeter:true,amenities:edit.amenities||[]});
+  setEdit(null);refresh()};
+ return <div>
+  <div className="row" style={{marginBottom:10}}>
+   <input style={{flex:1}} placeholder="🔍 ค้นหาเลขห้อง" value={q} onChange={e=>setQ(e.target.value)}/>
+   <button className="btn" onClick={()=>setEdit({code:'',floor:'',unitType:curProp().type==='เช่าอาคาร'?'อาคาร':curProp().type==='เช่าป้าย'?'ป้าย':'ห้องพัก',rent:0,service:430,areaFee:0,internet:0,status:'ว่าง',contractType:'old',note:''})}>+ เพิ่มห้อง</button>
+  </div>
+  {floors.map(f=><div className="card" key={f}><h2>ชั้น {f}</h2><div className="scrollx"><table className="t leftw">
+   <thead><tr><th>ห้อง</th><th>ผู้เช่า</th><th className="r">ค่าเช่า</th><th>เฟอร์นิเจอร์</th><th>สถานะ</th></tr></thead>
+   <tbody>{units.filter(u=>u.floor===f).map(u=>{const c=activeContract(u.id);const unpaidN=Repo.list('bills',b=>b.unitId===u.id&&b.status==='ค้างชำระ').length;return <tr key={u.id} className="tap" onClick={()=>setView(u)}>
+    <td><span className="plink">{u.code}</span></td>
+    <td>{c?<span className="plink" onClick={e=>{e.stopPropagation();setViewTen({t:Repo.get('tenants',c.tenantId),c})}}>{tenantName(c.tenantId)}</span>:<span className="mut">ไม่มีผู้เช่า</span>}</td>
+    <td className="r">{fmt(c?c.rent:u.rent)}</td>
+    <td>{(u.amenities&&u.amenities.length)?u.amenities.join(', '):<span className="mut">-</span>}</td>
+    <td>{!c?<b style={{color:'var(--mut)',fontWeight:600}}>ว่าง</b>:unpaidN>0?<b style={{color:'var(--red)',fontWeight:700}}>ค้างค่าเช่า {unpaidN} เดือน</b>:<b style={{color:'var(--ok)',fontWeight:600}}>ปกติ</b>}</td></tr>})}
+   </tbody></table></div></div>)}
+  {payU&&(()=>{const{u,b}=payU;
+   return <Modal title={'วันที่จ่าย — ห้อง '+u.code} onClose={()=>setPayU(null)}>
+    <div className="mut" style={{marginBottom:10}}>บิลล่าสุด: เดือน {monthTH(b.rentMonth)} · ยอด {fmt(b.total)} บาท · สถานะปัจจุบัน: {b.status}{b.paidDate?' ('+dateTH(b.paidDate)+')':''}</div>
+    <F l="วันที่จ่าย"><input type="date" value={payU.date} onChange={e=>setPayU({...payU,date:e.target.value})}/></F>
+    <div className="row">
+     <button className="btn" onClick={()=>{
+      const rno=b.receiptNo||('R'+b.rentMonth.replace('-','')+'-'+String(b.id).padStart(4,'0'));
+      Repo.update('bills',b.id,{status:'ชำระแล้ว',paidDate:payU.date,payMethod:b.payMethod||'โอน',receiptNo:rno});
+      const ps=Repo.list('payments',p=>p.billId===b.id);
+      if(ps.length===0)Repo.create('payments',{billId:b.id,amount:b.total,date:payU.date,method:'โอน',ref:'',receiptNo:rno});
+      else ps.forEach(p=>Repo.update('payments',p.id,{date:payU.date}));
+      setPayU(null);refresh()}}>✓ จ่ายแล้ว วันที่ที่เลือก</button>
+     <button className="btn warn" onClick={()=>{
+      Repo.update('bills',b.id,{status:'ค้างชำระ',paidDate:null,payMethod:null});
+      Repo.list('payments',p=>p.billId===b.id).forEach(p=>Repo.remove('payments',p.id));
+      setPayU(null);refresh()}}>ค้างจ่าย (ยังไม่จ่าย)</button>
+     <button className="btn gray" onClick={()=>setPayU(null)}>ปิด</button>
+    </div>
+    {Repo.list('bills',x=>x.unitId===u.id&&x.status==='ค้างชำระ'&&x.id!==b.id).length>0&&
+     <div className="mut" style={{marginTop:8}}>⚠️ ห้องนี้ยังมีบิลเดือนก่อนหน้าค้างอยู่ — จัดการรายใบได้ที่หน้า "บิล"</div>}
+   </Modal>})()}
+  {viewTen&&<TenantViewModal entry={viewTen} onClose={()=>setViewTen(null)}
+   onEdit={()=>{OPEN_TENANT=viewTen.t.id;setViewTen(null);go('tenants')}}/>}
+  {view&&<RoomViewModal unit={view} onClose={()=>setView(null)}
+   onEdit={()=>{const u=Repo.get('units',view.id)||view;const cc=activeContract(u.id);
+    setEdit({...u,...(cc?{rent:cc.rent,service:cc.service}:{})});setView(null)}}/>}
+  {edit&&<Modal title={edit.id?('แก้ไขห้อง '+edit.code):'เพิ่มห้อง'} onClose={()=>setEdit(null)}>
+   <div className="grid2">
+    <F l="เลขห้อง"><input value={edit.code} onChange={e=>setEdit({...edit,code:e.target.value,floor:e.target.value.slice(1,2)})}/></F>
+    <F l="ชั้น"><input value={edit.floor} onChange={e=>setEdit({...edit,floor:e.target.value})}/></F>
+    <F l={'ค่าเช่า (บาท/เดือน)'+(edit.id&&activeContract(edit.id)?' 🔒 ผูกกับสัญญา — แก้ที่หน้าผู้เช่า':' (ตั้งต้นสำหรับผู้เช่าใหม่)')}>
+     <input type="number" value={edit.rent} disabled={!!(edit.id&&activeContract(edit.id))} onChange={e=>setEdit({...edit,rent:e.target.value})}/></F>
+    <F l={'ค่าบริการ'+(edit.id&&activeContract(edit.id)?' 🔒 ผูกกับสัญญา':'')}>
+     <input type="number" value={edit.service} disabled={!!(edit.id&&activeContract(edit.id))} onChange={e=>setEdit({...edit,service:e.target.value})}/></F>
+    <F l="ค่าบริการเสริม"><input type="number" value={edit.serviceExtra||0} onChange={e=>setEdit({...edit,serviceExtra:e.target.value})}/></F>
+    <F l="ค่าขยะ"><input type="number" value={edit.trash||0} onChange={e=>setEdit({...edit,trash:e.target.value})}/></F>
+    <F l="ค่าอื่นๆ รายเดือน"><input type="number" value={edit.otherFee||0} onChange={e=>setEdit({...edit,otherFee:e.target.value})}/></F>
+    <F l="ส่วนลด (ใส่ติดลบ เช่น -300)"><input type="number" value={edit.discount||0} onChange={e=>setEdit({...edit,discount:e.target.value})}/></F>
+    <F l="ค่าขอใช้พื้นที่ด้านข้าง"><input type="number" value={edit.areaFee} onChange={e=>setEdit({...edit,areaFee:e.target.value})}/></F>
+    <F l="ค่าอินเทอร์เน็ต"><input type="number" value={edit.internet} onChange={e=>setEdit({...edit,internet:e.target.value})}/></F>
+    <F l="รูปแบบสัญญา"><select value={edit.contractType} onChange={e=>setEdit({...edit,contractType:e.target.value})}>
+     <option value="old">สัญญาเก่า (ค่าบริการ 430)</option><option value="sor">สัญญา สคบ. (730 + ค่าดำเนินการ)</option></select></F>
+   </div>
+   {edit.id&&<div style={{border:'1.5px dashed var(--g3)',borderRadius:12,padding:'10px 12px',marginBottom:10}}>
+    <b style={{fontSize:13.5}}>👤 ผู้เช่าห้องนี้</b>
+    {(()=>{const c=activeContract(edit.id);
+     return c?<div className="row" style={{marginTop:8,justifyContent:'space-between'}}>
+       <span><b>{tenantName(c.tenantId)}</b> <span className="mut">สัญญาเริ่ม {dateTH(c.start)||'-'}</span></span>
+       <button className="btn sm warn" onClick={()=>moveOut(c)}>🚪 ย้ายออก</button></div>
+     :<div style={{marginTop:8}}>
+       <div className="grid2">
+        <F l="เลือกผู้เช่าที่มีอยู่"><select value={tsel} onChange={e=>setTsel(e.target.value)}>
+         <option value="0">— เลือก —</option>
+         {Repo.list('tenants').map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></F>
+        <F l="หรือพิมพ์ชื่อผู้เช่าใหม่"><input value={tnew} onChange={e=>setTnew(e.target.value)} placeholder="ชื่อ-สกุล"/></F>
+       </div>
+       <button className="btn sm" onClick={assignTenant}>✓ บันทึกเข้าพัก (สร้างสัญญาให้อัตโนมัติ)</button>
+       <div className="mut" style={{marginTop:5}}>รายละเอียดเต็ม เช่น วันสิ้นสุด/มัดจำ/เงินประกัน ไปเติมที่หน้า "สัญญา"</div>
+      </div>})()}
+   </div>}
+   <F l="เฟอร์นิเจอร์ในห้อง">
+    <div className="row" style={{gap:14,padding:'4px 0'}}>
+     {STD_AMEN.map(a=><label key={a} style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer',fontSize:14,marginBottom:0}}>
+      <input type="checkbox" style={{width:'auto',margin:0}} checked={(edit.amenities||[]).includes(a)}
+       onChange={e=>{const cur=(edit.amenities||[]).filter(x=>x!==a);
+        setEdit({...edit,amenities:e.target.checked?[...cur,a]:cur})}}/>{a}</label>)}
+    </div>
+    <div className="row" style={{marginTop:4,alignItems:'center',flexWrap:'nowrap'}}>
+     <span style={{fontSize:13,whiteSpace:'nowrap'}}>อื่นๆ ระบุ:</span>
+     <input style={{flex:1}} placeholder="เช่น พัดลม, เครื่องทำน้ำอุ่น (คั่นด้วย ,)"
+      defaultValue={(edit.amenities||[]).filter(x=>!STD_AMEN.includes(x)).join(', ')}
+      onChange={e=>setEdit({...edit,_amenOther:e.target.value})}/>
+    </div>
+   </F>
+   <F l="หมายเหตุ"><input value={edit.note||''} onChange={e=>setEdit({...edit,note:e.target.value})}/></F>
+   <div className="row"><button className="btn" onClick={save}>💾 บันทึก</button>
+    {edit.id&&<button className="btn red" onClick={()=>{if(confirm('ลบห้อง '+edit.code+'?')){Repo.remove('units',edit.id);setEdit(null);refresh()}}}>ลบ</button>}</div>
+  </Modal>}
+ </div>;
+}
+// ===== โมดัลดูห้อง (ใช้ร่วมหน้าห้อง/หน้าผู้เช่า) =====
+function RoomViewModal({unit,onClose,onEdit}){
+ const u=Repo.get('units',unit.id)||unit;const c=activeContract(u.id);
+ const R=({l,v})=><div className="step" style={{padding:'6px 0'}}><div style={{minWidth:140}} className="mut">{l}</div><div style={{flex:1}}><b>{v===0||v===''||v==null?'-':v}</b></div></div>;
+ return <Modal title={'🚪 ห้อง '+u.code} onClose={onClose}>
+  <R l="ผู้เช่า" v={c?tenantName(c.tenantId):'ไม่มีผู้เช่า (ว่าง)'}/>
+  {c&&<R l="สัญญาเริ่ม" v={c.start?dateTH(c.start):'-'}/>}
+  <R l={'ค่าเช่า'+(c?' 🔒 ตามสัญญา':' (ตั้งต้น)')} v={fmt(c?c.rent:u.rent)+' บาท/เดือน'}/>
+  <R l="ค่าบริการ" v={fmt(c?c.service:u.service)+' บาท/เดือน'}/>
+  <R l="ค่าบริการเสริม" v={u.serviceExtra?fmt(u.serviceExtra):0}/>
+  <R l="ค่าขยะ" v={u.trash?fmt(u.trash):0}/>
+  <R l="ค่าอื่นๆ รายเดือน" v={u.otherFee?fmt(u.otherFee):0}/>
+  <R l="ส่วนลด" v={u.discount?fmt(u.discount):0}/>
+  <R l="ค่าขอใช้พื้นที่" v={u.areaFee?fmt(u.areaFee):0}/>
+  <R l="อินเทอร์เน็ต" v={u.internet?fmt(u.internet):0}/>
+  <R l="รูปแบบสัญญา" v={u.contractType==='sor'?'สัญญาควบคุม สคบ.':'สัญญาเก่า'}/>
+  <div className="step" style={{padding:'6px 0'}}><div style={{minWidth:140}} className="mut">เฟอร์นิเจอร์ในห้อง</div>
+   <div style={{flex:1,display:'flex',flexWrap:'wrap',gap:5}}>
+    {STD_AMEN.map(a=>{const has=(u.amenities||[]).includes(a);
+     return <span key={a} className={'tag '+(has?'g':'b')}>{(has?'✓ ':'– ')+a}</span>})}
+    {(u.amenities||[]).filter(x=>!STD_AMEN.includes(x)).map(x=><span key={x} className="tag g">✓ {x}</span>)}
+   </div></div>
+  <R l="หมายเหตุ" v={u.note}/>
+  <div className="row" style={{marginTop:10}}>
+   <button className="btn" onClick={onEdit}>✏️ แก้ไขห้อง</button>
+   <button className="btn gray" onClick={onClose}>ปิด</button>
+  </div>
+ </Modal>;
+}
+// ===== โมดัลดูผู้เช่า+สัญญา (ใช้ร่วมหน้าห้อง/หน้าผู้เช่า) =====
+function TenantViewModal({entry,onClose,onEdit}){
+ const t=Repo.get('tenants',entry.t.id)||entry.t;
+ const c=entry.c?Repo.get('contracts',entry.c.id):null;
+ const u=c&&Repo.get('units',c.unitId);
+ const R=({l,v})=><div className="step" style={{padding:'6px 0'}}><div style={{minWidth:140}} className="mut">{l}</div><div style={{flex:1}}><b>{v===''||v==null?'-':v}</b></div></div>;
+ return <Modal title={'👤 '+t.name} onClose={onClose}>
+  <R l="เบอร์โทร" v={t.phone}/>
+  <R l="LINE" v={t.line}/>
+  <R l="เลขบัตรประชาชน" v={t.idCard}/>
+  <R l="อาชีพ" v={t.job}/>
+  <R l="ทะเบียนรถ" v={t.vehicle}/>
+  <R l="ผู้ติดต่อฉุกเฉิน" v={t.emergency}/>
+  {c?<div style={{border:'1.5px dashed var(--g3)',borderRadius:12,padding:'10px 12px',margin:'10px 0'}}>
+   <div className="row" style={{justifyContent:'space-between'}}>
+    <b style={{fontSize:13.5}}>📄 สัญญาเช่า — ห้อง {u?u.code:'?'}</b>{contractTag(c.status)}
+   </div>
+   <R l="ประเภทสัญญา" v={c.type==='sor'?'สัญญาควบคุม สคบ.':'สัญญาเก่า'}/>
+   <R l="เลขที่" v={c.no}/>
+   <R l="เริ่ม — สิ้นสุด" v={(c.start?dateTH(c.start):'-')+' — '+(c.end?dateTH(c.end):'ไม่กำหนด')}/>
+   <R l="ค่าเช่า" v={fmt(c.rent)+' บาท/เดือน'}/>
+   <R l="ค่าบริการ" v={fmt(c.service)+' บาท/เดือน'}/>
+   {(()=>{const deps=Repo.list('deposits',d=>d.contractId===c.id);
+     const of=kw=>{const ds=deps.filter(d=>(d.type||'').indexOf(kw)>=0);return ds.length?ds.map(d=>fmt(d.amount)+' บาท ('+d.status+')').join(', '):'-'};
+     return <React.Fragment><R l="ค่ามัดจำ (จอง)" v={of('มัดจำ')}/><R l="ค่าประกันห้อง" v={of('ประกัน')}/></React.Fragment>})()}
+   {Repo.list('files',x=>x.contractId===c.id).map(fl=><div className="row" key={fl.id} style={{marginTop:6,fontSize:13,flexWrap:'nowrap'}}>
+    <span style={{flex:1,overflow:'hidden',textOverflow:'ellipsis'}}>📎 {fl.name}</span>
+    <button className="btn sm line" onClick={()=>viewFile(fl)}>ดู</button></div>)}
+  </div>
+  :<div className="mut" style={{margin:'10px 0'}}>ไม่มีสัญญา — บันทึกเข้าพักได้ที่หน้า "ห้อง"</div>}
+  {t.note?<R l="หมายเหตุ" v={t.note}/>:null}
+  <div className="row" style={{marginTop:10}}>
+   <button className="btn" onClick={onEdit}>✏️ แก้ไข</button>
+   <button className="btn gray" onClick={onClose}>ปิด</button>
+  </div>
+ </Modal>;
+}
+// ===== กล่องจัดการไฟล์สัญญา (อัปโหลด/ดู/ดาวน์โหลด — PDF/JPG/PNG) =====
+function ContractFileModal({c,t,onClose,refresh}){
+ const [,bump]=useState(0);
+ const u=Repo.get('units',c.unitId)||{};
+ const files=Repo.list('files',x=>x.contractId===c.id).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ const dl=fl=>{const a=document.createElement('a');a.href=fl.data;a.download=fl.name||'contract';document.body.appendChild(a);a.click();a.remove()};
+ const up=async e=>{
+  for(const file of [...e.target.files]){
+   let data=await fileToDataUrl(file); data=await shrinkImage(data);
+   if(data.length>4200000){alert('"'+file.name+'" ใหญ่เกิน ~3MB — ข้ามไฟล์นี้ (สแกน/ถ่ายความละเอียดต่ำลง)');continue}
+   try{Repo.create('files',{contractId:c.id,name:file.name,data,date:today()})}catch(err){break}
+  }
+  e.target.value='';bump(x=>x+1);
+ };
+ return <Modal title={'📄 สัญญา — ห้อง '+(u.code||'')+(c.no?(' · เลขที่ '+c.no):'')} onClose={onClose}>
+  <div className="mut" style={{marginBottom:10}}>ผู้เช่า {t?t.name:'-'} · เก็บไฟล์ PDF / JPG / PNG</div>
+  {files.length===0
+   ?<div className="mut" style={{marginBottom:12}}>ยังไม่มีไฟล์สัญญา — กด "อัปโหลด" ด้านล่างเพื่อเพิ่ม</div>
+   :<div style={{marginBottom:12}}>{files.map(fl=><div key={fl.id} className="step" style={{padding:'8px 0',alignItems:'center'}}>
+     <div style={{flex:1,minWidth:0}}><b style={{fontSize:13,wordBreak:'break-all'}}>{fl.name}</b><div className="mut">{dateTH(fl.date)}</div></div>
+     <div className="row" style={{gap:5,flexWrap:'nowrap'}}>
+      <button className="btn sm line" onClick={()=>viewFile(fl)}>👁 ดูสัญญา</button>
+      <button className="btn sm" onClick={()=>dl(fl)}>⬇️ Download</button>
+      <button className="btn sm red" onClick={()=>{if(confirm('ลบไฟล์ "'+fl.name+'"?')){Repo.remove('files',fl.id);bump(x=>x+1)}}}>🗑</button>
+     </div></div>)}</div>}
+  <label className="btn" style={{cursor:'pointer',display:'inline-block'}}>⬆️ Upload ไฟล์สัญญา (PDF/JPG/PNG)
+   <input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/*" multiple style={{display:'none'}} onChange={up}/></label>
+ </Modal>;
+}
+// ===== ผู้เช่า + สัญญา (รวมหน้าเดียว, เก็บประวัติสัญญา + ไฟล์แนบ) =====
+function Tenants({refresh,go}){
+ const [edit,setEdit]=useState(()=>{
+  if(OPEN_TENANT){const t=Repo.get('tenants',OPEN_TENANT);OPEN_TENANT=null;
+   if(t){const c=Repo.list('contracts',x=>x.tenantId===t.id&&x.status==='ใช้งาน')[0]||null;return{...t,_c:c?{...c}:null}}}
+  return null});
+ const [viewT,setViewT]=useState(null);
+ const [viewU,setViewU]=useState(null);
+ const [cfile,setCfile]=useState(null); // กล่องไฟล์สัญญา (แคปซูลเลขสัญญา)
+ const [q,setQ]=useState('');
+ const [fstat,setFstat]=useState('ใช้งาน'); // ใช้งาน|สิ้นสุด|ทั้งหมด
+ const [dep,setDep]=useState({type:'เงินประกัน',amount:''});
+ const [,f_]=useState(0);const bump=()=>f_(x=>x+1); // re-render โดยไม่ปิดโมดัล
+ const uset=new Set(unitsOfCur().map(u=>u.id));
+ const match=t=>!q||t.name.includes(q)||String(t.phone||'').includes(q);
+ let entries=Repo.list('contracts',c=>uset.has(c.unitId)&&(fstat==='ทั้งหมด'||(fstat==='ใช้งาน'?c.status==='ใช้งาน':c.status!=='ใช้งาน')))
+  .map(c=>({t:Repo.get('tenants',c.tenantId),c})).filter(x=>x.t&&match(x.t));
+ if(fstat!=='สิ้นสุด'){
+  const noC=Repo.list('tenants',t=>Repo.list('contracts',c=>c.tenantId===t.id).length===0&&match(t));
+  entries=entries.concat(noC.map(t=>({t,c:null})));
+ }
+ entries.sort((a,b)=>{
+  const ka=a.c?(Repo.get('units',a.c.unitId)||{}).code||'~':'~~';
+  const kb=b.c?(Repo.get('units',b.c.unitId)||{}).code||'~':'~~';
+  return ka.localeCompare(kb)||(a.c&&b.c?(b.c.id-a.c.id):0);
+ });
+ const openEdit=en=>setEdit({...en.t,_c:en.c?{...en.c}:null});
+ const setC=(k,v)=>setEdit({...edit,_c:{...edit._c,[k]:v}});
+ const recomputeUnit=uid=>{
+  const occ=Repo.list('contracts',x=>x.unitId===uid&&x.status==='ใช้งาน').length>0;
+  Repo.update('units',uid,{status:occ?'มีผู้เช่า':'ว่าง'})};
+ const save=()=>{
+  const{id,_c,...r}=edit;
+  if(!r.name){alert('ใส่ชื่อผู้เช่า');return}
+  if(id)Repo.update('tenants',id,r);else Repo.create('tenants',r);
+  if(_c){
+   const patch={type:_c.type,no:_c.no,start:_c.start,end:_c.end,status:_c.status,
+    rent:+_c.rent||0,service:+_c.service||0,dueDay:+_c.dueDay||5};
+   if(patch.status!=='ใช้งาน'&&!patch.end)patch.end=today();
+   Repo.update('contracts',_c.id,patch);
+   if(patch.status==='ใช้งาน')Repo.update('units',_c.unitId,{rent:patch.rent,service:patch.service}); // สัญญาเป็นคีย์ → ห้องตามสัญญา
+   recomputeUnit(_c.unitId);
+  }
+  setEdit(null);refresh()};
+ const moveOut=()=>{const c=edit._c;
+  if(!confirm('ย้ายออก: สิ้นสุดสัญญาห้อง '+(Repo.get('units',c.unitId)||{}).code+' ของ '+edit.name+'? (สัญญายังเก็บไว้ในประวัติ)'))return;
+  Repo.update('contracts',c.id,{status:'สิ้นสุด',end:today()});
+  recomputeUnit(c.unitId);setEdit(null);refresh()};
+ const delContract=()=>{const c=edit._c;
+  if(!confirm('ลบสัญญานี้ถาวร (กรณีเป็นขยะ/บันทึกผิด)?\nมัดจำ-ประกัน และไฟล์แนบของสัญญานี้จะถูกลบด้วย — ย้อนกลับไม่ได้'))return;
+  Repo.list('deposits',d=>d.contractId===c.id).forEach(d=>Repo.remove('deposits',d.id));
+  Repo.list('files',x=>x.contractId===c.id).forEach(x=>Repo.remove('files',x.id));
+  Repo.remove('contracts',c.id);
+  recomputeUnit(c.unitId);setEdit(null);refresh()};
+ const addDep=()=>{if(!+dep.amount){alert('ใส่จำนวนเงิน');return}
+  Repo.create('deposits',{contractId:edit._c.id,type:dep.type,amount:+dep.amount,date:today(),status:'ถือไว้',note:''});
+  setDep({type:'เงินประกัน',amount:''});bump()};
+ const upload=async e=>{
+  for(const file of [...e.target.files]){
+   let data=await fileToDataUrl(file);
+   data=await shrinkImage(data);
+   if(data.length>4200000){alert('"'+file.name+'" ใหญ่เกิน ~3MB — ข้ามไฟล์นี้ (แนะนำสแกน/ถ่ายที่ความละเอียดต่ำลง)');continue}
+   try{Repo.create('files',{contractId:edit._c.id,name:file.name,data,date:today()})}
+   catch(err){break}
+  }
+  e.target.value='';bump()};
+ const FBtn=v=><button key={v} className={'btn sm '+(fstat===v?'':'line')} onClick={()=>setFstat(v)}>{v==='ใช้งาน'?'ยังไม่สิ้นสุด':v==='สิ้นสุด'?'สิ้นสุดแล้ว':'ทั้งหมด'}</button>;
+ return <div>
+  <div className="row" style={{marginBottom:10}}>
+   <input style={{flex:1,minWidth:160}} placeholder="🔍 ค้นหาชื่อ/เบอร์โทร" value={q} onChange={e=>setQ(e.target.value)}/>
+   <button className="btn" onClick={()=>setEdit({name:'',idCard:'',phone:'',line:'',addr:'',emergency:'',job:'',vehicle:'',note:'',_c:null})}>+ เพิ่มผู้เช่า</button></div>
+  <div className="row" style={{marginBottom:10}}>
+   <span className="mut">สัญญา:</span>{['ใช้งาน','สิ้นสุด','ทั้งหมด'].map(FBtn)}
+  </div>
+  <div className="card">
+   {entries.length===0&&<div className="mut">ไม่มีรายการตามตัวกรองนี้</div>}
+   <div className="scrollx"><table className="t leftw">
+   {entries.length>0&&<thead><tr><th>ผู้เช่า</th><th>เลขสัญญา</th><th>ห้อง</th><th className="r">ค่าเช่า</th><th>เริ่ม</th><th>สิ้นสุด</th><th>สถานะ</th></tr></thead>}
+   <tbody>
+   {entries.map((en,i)=>{const{t,c}=en;const u=c&&Repo.get('units',c.unitId);
+    const nf=c?Repo.list('files',x=>x.contractId===c.id).length:0;
+    return <tr key={i} className="tap" onClick={()=>setViewT(en)}>
+    <td><span className="plink">{t.name}</span>{t.phone?<div className="mut" style={{marginTop:3}}>{t.phone}</div>:null}</td>
+    <td>{c?<span className="plink" title="จัดการไฟล์สัญญา" onClick={e=>{e.stopPropagation();setCfile({c,t})}}>{c.no||'สัญญา'}{(()=>{const n=Repo.list('files',x=>x.contractId===c.id).length;return n?' 📎'+n:''})()}</span>:<span className="mut">-</span>}</td>
+    <td>{u?<span className="plink" onClick={e=>{e.stopPropagation();setViewU(u)}}>{u.code}</span>:<span className="mut">ไม่มีสัญญา</span>}</td>
+    <td className="r">{c?fmt(c.rent):'-'}</td>
+    <td>{c&&c.start?dateTH(c.start):'-'}</td>
+    <td>{c&&c.end?dateTH(c.end):'-'}</td>
+    <td>{c?contractTag(c.status):'-'}{nf>0&&<span className="mut"> 📎{nf}</span>}</td></tr>})}
+  </tbody></table></div></div>
+  {cfile&&<ContractFileModal c={cfile.c} t={cfile.t} onClose={()=>{setCfile(null);refresh()}}/>}
+  {viewT&&<TenantViewModal entry={viewT} onClose={()=>setViewT(null)} onEdit={()=>{openEdit(viewT);setViewT(null)}}/>}
+  {viewU&&<RoomViewModal unit={viewU} onClose={()=>setViewU(null)}
+   onEdit={()=>{OPEN_UNIT=viewU.id;setViewU(null);go('units')}}/>}
+  {edit&&<Modal title={edit.id?('ผู้เช่า — '+edit.name):'เพิ่มผู้เช่า'} onClose={()=>setEdit(null)}>
+   <F l="ชื่อ-สกุล *"><input value={edit.name} onChange={e=>setEdit({...edit,name:e.target.value})}/></F>
+   <div className="grid2">
+    <F l="เลขบัตรประชาชน"><input value={edit.idCard||''} onChange={e=>setEdit({...edit,idCard:e.target.value})}/></F>
+    <F l="เบอร์โทร"><input value={edit.phone||''} onChange={e=>setEdit({...edit,phone:e.target.value})}/></F>
+    <F l="LINE ID"><input value={edit.line||''} onChange={e=>setEdit({...edit,line:e.target.value})}/></F>
+    <F l="อาชีพ"><input value={edit.job||''} onChange={e=>setEdit({...edit,job:e.target.value})}/></F>
+    <F l="ทะเบียนรถ"><input value={edit.vehicle||''} onChange={e=>setEdit({...edit,vehicle:e.target.value})}/></F>
+    <F l="ผู้ติดต่อฉุกเฉิน"><input value={edit.emergency||''} onChange={e=>setEdit({...edit,emergency:e.target.value})}/></F>
+   </div>
+   <F l="ที่อยู่ตามบัตร"><input value={edit.addr||''} onChange={e=>setEdit({...edit,addr:e.target.value})}/></F>
+   {edit._c&&<div style={{border:'1.5px dashed var(--g3)',borderRadius:12,padding:'10px 12px',marginBottom:10}}>
+    <div className="row" style={{justifyContent:'space-between'}}>
+     <b style={{fontSize:13.5}}>📄 สัญญาเช่า — ห้อง {(Repo.get('units',edit._c.unitId)||{}).code}</b>
+     {contractTag(edit._c.status)}
+    </div>
+    <div className="grid2" style={{marginTop:8}}>
+     <F l="สถานะสัญญา"><select value={edit._c.status} onChange={e=>setC('status',e.target.value)}>
+      <option value="ใช้งาน">ยังไม่สิ้นสุด</option>
+      <option value="สิ้นสุด">หมดอายุสัญญา</option>
+      <option value="ยกเลิก">ยกเลิกสัญญา</option></select></F>
+     <F l="ประเภทสัญญา"><select value={edit._c.type} onChange={e=>setC('type',e.target.value)}>
+      <option value="old">สัญญาเก่า</option><option value="sor">สัญญาควบคุม สคบ.</option></select></F>
+     <F l="เลขที่สัญญา"><input value={edit._c.no||''} onChange={e=>setC('no',e.target.value)}/></F>
+     <F l="วันเริ่มสัญญา"><input type="date" value={edit._c.start||''} onChange={e=>setC('start',e.target.value)}/></F>
+     <F l="วันสิ้นสุด"><input type="date" value={edit._c.end||''} onChange={e=>setC('end',e.target.value)}/></F>
+     <F l="ค่าเช่า/เดือน"><input type="number" value={edit._c.rent} onChange={e=>setC('rent',e.target.value)}/></F>
+     <F l="ค่าบริการ/เดือน"><input type="number" value={edit._c.service} onChange={e=>setC('service',e.target.value)}/></F>
+    </div>
+    <b style={{fontSize:13}}>💰 มัดจำ / เงินประกัน</b>
+    {Repo.list('deposits',d=>d.contractId===edit._c.id).map(d=><div className="row" key={d.id} style={{marginTop:6,fontSize:13}}>
+     <span style={{flex:1}}>{d.type} {fmt(d.amount)} บาท {statusTag(d.status)}</span>
+     {d.status==='ถือไว้'&&<button className="btn sm gray" onClick={()=>{if(confirm('คืน'+d.type+' '+fmt(d.amount)+' บาท?')){Repo.update('deposits',d.id,{status:'คืนแล้ว',returnDate:today()});bump()}}}>คืนเงิน</button>}
+    </div>)}
+    <div className="row" style={{marginTop:8,flexWrap:'nowrap'}}>
+     <select style={{maxWidth:130}} value={dep.type} onChange={e=>setDep({...dep,type:e.target.value})}>
+      <option>เงินประกัน</option><option>มัดจำจอง</option></select>
+     <input type="number" placeholder="บาท" style={{maxWidth:110}} value={dep.amount} onChange={e=>setDep({...dep,amount:e.target.value})}/>
+     <button className="btn sm line" onClick={addDep}>＋ รับเงิน</button>
+    </div>
+    <div style={{marginTop:12}}><b style={{fontSize:13}}>📎 ไฟล์สัญญา (สแกน PDF / รูปถ่าย)</b></div>
+    {Repo.list('files',x=>x.contractId===edit._c.id).map(fl=><div className="row" key={fl.id} style={{marginTop:6,fontSize:13,flexWrap:'nowrap'}}>
+     <span style={{flex:1,overflow:'hidden',textOverflow:'ellipsis'}}>{fl.name} <span className="mut">({Math.round(fl.data.length*0.75/1024)} KB · {dateTH(fl.date)})</span></span>
+     <button className="btn sm line" onClick={()=>viewFile(fl)}>ดู</button>
+     <button className="btn sm red" onClick={()=>{if(confirm('ลบไฟล์ "'+fl.name+'"?')){Repo.remove('files',fl.id);bump()}}}>✕</button>
+    </div>)}
+    <div style={{marginTop:8}}><label className="btn sm line" style={{display:'inline-block'}}>＋ แนบไฟล์ (PDF/รูป)
+     <input type="file" accept="image/*,.pdf" multiple style={{display:'none'}} onChange={upload}/></label>
+     <span className="mut" style={{marginLeft:8}}>รูปจะถูกย่ออัตโนมัติ · เพดานที่เก็บรวม ~5MB</span></div>
+    <div className="row" style={{marginTop:12}}>
+     {edit._c.status==='ใช้งาน'&&<button className="btn warn sm" onClick={moveOut}>🚪 ย้ายออก (เก็บสัญญาเป็นประวัติ)</button>}
+     <button className="btn red sm" onClick={delContract}>🗑 ลบสัญญานี้ (ขยะ)</button>
+    </div>
+   </div>}
+   {edit.id&&!edit._c&&<div className="mut" style={{marginBottom:10}}>ยังไม่มีสัญญา — บันทึกเข้าพักได้ที่หน้า "ห้อง" → แก้ไขห้อง → ผู้เช่าห้องนี้</div>}
+   <F l="หมายเหตุ"><input value={edit.note||''} onChange={e=>setEdit({...edit,note:e.target.value})}/></F>
+   <div className="row">
+    <button className="btn" onClick={save}>💾 บันทึก</button>
+    {edit.id&&!edit._c&&<button className="btn red" onClick={()=>{if(confirm('ลบผู้เช่า '+edit.name+'?')){Repo.remove('tenants',edit.id);setEdit(null);refresh()}}}>ลบ</button>}
+   </div>
+  </Modal>}
+ </div>;
+}
+// ===== จดมิเตอร์ =====
+function Meters({refresh}){
+ const [month,setMonth]=useMonth();
+ const [util,setUtil]=useUtil(); // water | elec (จำข้ามการ refresh)
+ const isW=util==='water';
+ const units=unitsOfCur().filter(u=>u.hasWaterMeter||u.hasElecMeter).sort((a,b)=>a.code.localeCompare(b.code));
+ const prevM=addMonth(month,-1);
+ const readings=Repo.list('meter_readings',r=>r.month===month);
+ const prevR=Repo.list('meter_readings',r=>r.month===prevM);
+ const [draft,setDraft]=useState({});
+ const savedCount=readings.filter(r=>(isW?r.wEnd:r.eEnd)>0).length;
+ const [editing,setEditing]=useState(false);
+ const [editPrev,setEditPrev]=useState(false); // ปลดล็อกช่อง "เดือนก่อน" (เฉพาะตอนกดแก้ไข)
+ const [review,setReview]=useState(null); // ผลสอบทาน (รายการห้องผิดปกติ) รอผู้ใช้ยืนยัน
+ // เปลี่ยนเดือน/ชนิดมิเตอร์ → รีเซ็ต draft และตั้งโหมด: มีข้อมูลแล้ว=ล็อกดู, ยังไม่มี=แก้ไข
+ React.useEffect(()=>{setDraft({});setEditing(savedCount===0);setEditPrev(false);setReview(null);},[month,util]);
+ const get=(uid)=>{
+  const ex=readings.find(r=>r.unitId===uid);
+  const pv=prevR.find(r=>r.unitId===uid);
+  const d=draft[uid]||{};
+  return{ex,pv,
+   wStart:d.wStart??(ex?ex.wStart:(pv?pv.wEnd:'')),wEnd:d.wEnd??(ex?ex.wEnd:''),
+   eStart:d.eStart??(ex?ex.eStart:(pv?pv.eEnd:'')),eEnd:d.eEnd??(ex?ex.eEnd:'')}};
+ const set=(uid,g,k,v)=>setDraft({...draft,[uid]:{...(draft[uid]||{wStart:g.wStart,wEnd:g.wEnd,eStart:g.eStart,eEnd:g.eEnd}),[k]:v}});
+ const commit=()=>{let n=0;
+  units.forEach(u=>{const g=get(u.id);
+   const end=isW?g.wEnd:g.eEnd; if(end===''||end==null)return;
+   const base=g.ex?{...g.ex}:{unitId:u.id,month,wStart:0,wEnd:0,eStart:0,eEnd:0,by:'เจ้าของ',note:''};
+   if(isW){base.wStart=+g.wStart||0;base.wEnd=+g.wEnd||0}else{base.eStart=+g.eStart||0;base.eEnd=+g.eEnd||0}
+   base.readDate=today();
+   g.ex?Repo.update('meter_readings',g.ex.id,base):Repo.create('meter_readings',base);n++});
+  setDraft({});setEditing(false);setEditPrev(false);setReview(null);alert('บันทึก'+(isW?'ค่าน้ำ':'ค่าไฟ')+' '+n+' ห้อง เดือน '+monthTH(month));refresh()};
+ // ค่าเฉลี่ยหน่วยที่ใช้ 3 เดือนย้อนหลัง (เฉพาะชนิดที่กำลังจด) — null ถ้าไม่มีประวัติ
+ const avgUse=(uid)=>{
+  const h=Repo.list('meter_readings',r=>r.unitId===uid&&r.month<month).sort((a,b)=>b.month.localeCompare(a.month)).slice(0,3);
+  const us=h.map(r=>usage(isW?r.wStart:r.eStart,isW?r.wEnd:r.eEnd)).filter(v=>v>0);
+  return us.length?us.reduce((s,v)=>s+v,0)/us.length:null};
+ // สอบทานรายห้อง → คืน {code,rs} ถ้าผิดปกติ, null ถ้าปกติ
+ const checkUnit=(u)=>{const g=get(u.id);const end=isW?g.wEnd:g.eEnd;if(end===''||end==null)return null;
+   const S=+(isW?g.wStart:g.eStart)||0,E=+end||0;const use=usage(S,E);const avg=avgUse(u.id);const rs=[];
+   if(E<S)rs.push('เลขเดือนนี้ '+fmt(E)+' น้อยกว่าเดือนก่อน '+fmt(S)+' (มิเตอร์อาจวนรอบ หรือกรอกสลับกัน)');
+   if(avg!=null&&avg>0){
+    if(use>avg*1.5)rs.push('ใช้ '+use+' หน่วย — สูงกว่าค่าเฉลี่ย 3 เดือน ('+avg.toFixed(1)+' หน่วย) เกิน 50%');
+    else if(use<avg*0.3)rs.push('ใช้ '+use+' หน่วย — ต่ำกว่า 30% ของค่าเฉลี่ย 3 เดือน ('+avg.toFixed(1)+' หน่วย)')}
+   // ดักค่าที่พิมพ์เกินจริง แม้ไม่มีประวัติ 3 เดือนให้เทียบ (เช่น ห้องที่เดือนก่อนใช้ 0)
+   if(use>9999&&!rs.some(x=>x.indexOf('สูงกว่าค่าเฉลี่ย')>=0))rs.push('ใช้ '+use+' หน่วย — มากผิดปกติ (เกินหนึ่งรอบมิเตอร์ 4 หลัก น่าจะพิมพ์เลขเกิน)');
+   return rs.length?{code:u.code,rs}:null};
+ const checkAnomalies=()=>units.map(checkUnit).filter(Boolean);
+ // เตือนทันทีที่กรอกห้องนั้นเสร็จ (ออกจากช่อง) — จะได้แก้ตรงนั้นก่อนไปห้องอื่น
+ const checkCell=(u)=>{const one=checkUnit(u);if(one)setReview({rooms:[one],mode:'cell'})};
+ const saveAll=()=>{const a=checkAnomalies();if(a.length)setReview({rooms:a,mode:'save'});else commit()};
+ const startNew=()=>{
+  if(Object.keys(draft).length>0&&!confirm('มีข้อมูลที่ยังไม่บันทึก จะทิ้งไหม?\n(แนะนำกด "บันทึก" ก่อน)'))return;
+  const nm=addMonth(month,1);
+  if(!confirm('เริ่มจดเดือนใหม่ → '+monthTH(nm)+'\n\n· เลข "เดือนก่อน" จะดึงจากเลข "เดือนนี้" ที่บันทึกไว้เมื่อ '+monthTH(month)+' อัตโนมัติ\n· ช่อง "เดือนนี้" จะว่างให้จดใหม่\n· ประวัติเดือนเก่ายังถูกเก็บไว้ครบ\n\nดำเนินการต่อ?'))return;
+  setMonth(nm);setDraft({});setEditing(true);setEditPrev(false)};
+ const uc=isW?'#12489e':'#7b2d8e', utxt=isW?'wtxt':'etxt', un=isW?'น้ำ':'ไฟ';
+ const [hist,setHist]=useState(null); // {unit} = รายห้อง, {building:true} = ทั้งอาคาร
+ // ธีมสีทั้งหน้า+ตารางตามชนิดมิเตอร์: น้ำ=น้ำเงิน กปภ. / ไฟ=ม่วง กฟภ.
+ const tstyle={'--g1':shade(uc,-0.34),'--g2':uc,'--g3':shade(uc,0.16)};
+ const dark=document.documentElement.dataset.theme==='dark';
+ const headBg=dark?shade(uc,-0.5):shade(uc,0.87), headTx=dark?shade(uc,0.62):shade(uc,-0.22); // หัวตาราง
+ const pillBg=dark?shade(uc,-0.42):shade(uc,0.9), pillTx=dark?shade(uc,0.66):shade(uc,-0.28), pillBd=dark?shade(uc,-0.15):shade(uc,0.62); // เม็ดยาห้อง
+ const prevTx=dark?shade(uc,0.42):shade(uc,0.34); // "ก่อน" โทนอ่อนกลมกลืน
+ return <div style={tstyle}>
+  <div className="card">
+   <div className="row" style={{gap:8,marginBottom:11}}>
+    <button className={'upill water'+(isW?' on':'')} onClick={()=>setUtil('water')}>💧 จดค่าน้ำ</button>
+    <button className={'upill elec'+(!isW?' on':'')} onClick={()=>setUtil('elec')}>⚡ จดค่าไฟ</button>
+   </div>
+   <div className="row" style={{alignItems:'center',gap:8}}>
+    <input type="month" style={{width:'auto',flex:'0 1 200px'}} value={month} onChange={e=>setMonth(e.target.value)}/>
+    <div style={{flex:1}}/>
+    <button className="iconbtn" title="ดูประวัติการใช้ทั้งอาคาร (ทุกห้อง × ทุกเดือน)" onClick={()=>setHist({building:true})}>📊</button>
+    <button className="iconbtn" title="เริ่มเดือนใหม่ (ยกยอดเลขเดือนก่อน แล้วล้างช่องเดือนนี้)" onClick={startNew}>🔄</button></div>
+   <div className="mut" style={{marginTop:8}}>เดือนที่จดมิเตอร์ · ค่าน้ำไฟเดือนนี้จะออกในบิลเดือนถัดไป · เลข "เดือนก่อน" ดึงจากเดือน {monthTH(prevM)} อัตโนมัติ · แตะเลขห้องเพื่อดูประวัติ</div></div>
+  <div className="card">
+   <div className="row" style={{justifyContent:'space-between',alignItems:'center',marginBottom:11}}>
+    <b className={utxt} style={{fontFamily:'Prompt,sans-serif',fontSize:15}}>{isW?'💧 ค่าน้ำ (กปภ.)':'⚡ ค่าไฟ (กฟภ.)'} — {monthTH(month)}</b>
+    <div className="row" style={{gap:6}}>
+     <button className="iconbtn" title={editPrev?'กำลังแก้ไขได้ทั้งหมด (รวมเลขเดือนก่อน) — แตะอีกครั้งเพื่อล็อกเดือนก่อน':'แก้ไข — ปลดล็อกให้แก้เลข "เดือนก่อน" ได้ด้วย'} onClick={()=>{setEditing(true);setEditPrev(p=>!p)}} style={editPrev?{borderColor:uc,color:uc,background:headBg}:{}}>✏️</button>
+     {editing&&<button className="btn sm" title={'บันทึก'+un+'ทั้งหมด'} onClick={saveAll}>💾 บันทึก</button>}</div></div>
+   <div className="scrollx"><table className="t mtable">
+    <thead><tr>
+     <th style={{background:headBg,color:headTx}}>ห้อง</th>
+     <th className="r" style={{background:headBg,color:headTx}}>ก่อน</th>
+     <th style={{background:headBg,color:headTx}}>{un}เดือนนี้</th>
+     <th className="r" style={{background:headBg,color:headTx}}>หน่วย</th></tr></thead>
+    <tbody>{units.map(u=>{const g=get(u.id);
+     const st=isW?g.wStart:g.eStart, en=isW?g.wEnd:g.eEnd;
+     const use=en===''||en==null?'':usage(st,en);
+     const isSaved=isW?(g.ex&&g.ex.wEnd>0):(g.ex&&g.ex.eEnd>0);
+     const bad=editing&&en!==''&&en!=null&&!!checkUnit(u); // ผิดปกติ → ขอบแดงทันที
+     return <tr key={u.id}><td><span className="plink" style={{background:pillBg,color:pillTx,borderColor:pillBd}} title="ดูประวัติการใช้ห้องนี้" onClick={()=>setHist({unit:u})}>{u.code}{isSaved&&' ✓'}</span></td>
+      <td className="r">{editing&&(editPrev||!g.pv)
+       ? <input className="mprev" type="number" value={st} onChange={e=>set(u.id,g,isW?'wStart':'eStart',e.target.value)}/>
+       : <span style={{color:prevTx,fontWeight:600}}>{st===''||st==null?'—':fmt(st)}</span>}
+       {!g.pv&&editing&&<div style={{fontSize:10,color:'#c96e20',lineHeight:1.3}}>⚠ ไม่มีเดือนก่อน</div>}</td>
+      <td>{editing
+       ? <input className="mval" style={bad?{color:uc,borderColor:'var(--red)',background:'rgba(199,72,72,.09)'}:{color:uc}} type="number" placeholder="จด…" value={en} onChange={e=>set(u.id,g,isW?'wEnd':'eEnd',e.target.value)} onBlur={()=>checkCell(u)}/>
+       : <span className={utxt} style={{fontSize:15}}>{en===''||en==null?'—':fmt(en)}</span>}</td>
+      <td className="r">{use===''?<span className="mut">—</span>:<span className={'ubadge '+(isW?'w':'e')}>{use}</span>}</td></tr>})}
+   </tbody></table></div></div>
+  {hist&&<MeterHistory unit={hist.unit} util={util} onClose={()=>setHist(null)}/>}
+  {review&&<Modal title={review.mode==='cell'
+      ? '⚠️ สอบทาน'+un+' — ห้อง '+review.rooms[0].code
+      : '⚠️ สอบทานข้อมูล'+un+' — พบ '+review.rooms.length+' ห้องน่าตรวจสอบ'} onClose={()=>setReview(null)}>
+   <div className="mut" style={{marginBottom:10}}>{review.mode==='cell'
+     ? 'ค่าห้องนี้ดูผิดปกติ ตรวจสอบอีกครั้ง — ถ้าถูกต้องกด "ใช้ค่านี้" ถ้าพิมพ์ผิดกด "แก้ไขใหม่" แล้วพิมพ์ใหม่ได้เลย'
+     : 'ระบบพบค่าที่อาจผิดพลาด กรุณาตรวจสอบก่อนบันทึก — ถ้าถูกต้องแล้วกดยืนยันเพื่อบันทึกได้เลย'}</div>
+   <div className="scrollx" style={{maxHeight:'46vh'}}>
+    {review.rooms.map(r=><div key={r.code} className="step" style={{flexDirection:'column',alignItems:'flex-start',gap:3}}>
+     <b style={{fontSize:14,color:uc}}>ห้อง {r.code}</b>
+     {r.rs.map((x,i)=><div key={i} style={{color:'var(--warn)',fontSize:13}}>• {x}</div>)}</div>)}</div>
+   <div className="row" style={{marginTop:14}}>
+    {review.mode==='cell'
+     ? <button className="btn warn" onClick={()=>setReview(null)}>✓ ใช้ค่านี้</button>
+     : <button className="btn warn" onClick={commit}>✓ ข้อมูลถูกต้อง บันทึกทั้งหมด</button>}
+    <button className="btn gray" onClick={()=>setReview(null)}>↩️ {review.mode==='cell'?'แก้ไขใหม่':'กลับไปแก้ไข'}</button></div>
+  </Modal>}
+ </div>;
+}
+// ===== ประวัติการใช้น้ำ/ไฟ (รายห้อง + ทั้งอาคาร) =====
+function MeterHistory({unit,util,onClose}){
+ const units=unitsOfCur().filter(u=>u.hasWaterMeter||u.hasElecMeter).sort((a,b)=>a.code.localeCompare(b.code));
+ const uidSet=new Set(units.map(u=>u.id));
+ const allR=Repo.list('meter_readings',r=>uidSet.has(r.unitId));
+ const months=[...new Set(allR.map(r=>r.month))].sort(); // เก่า→ใหม่
+ if(unit){ // ── ประวัติรายห้อง (น้ำ+ไฟ ทุกเดือน) ──
+  const rows=months.map(m=>allR.find(x=>x.unitId===unit.id&&x.month===m)).filter(Boolean).reverse();
+  return <Modal title={'📊 ประวัติการใช้ — ห้อง '+unit.code} onClose={onClose}>
+   {rows.length===0?<div className="mut">ยังไม่มีประวัติการจดมิเตอร์ของห้องนี้</div>:
+   <div className="scrollx"><table className="t">
+    <thead><tr><th>เดือน</th>
+     <th className="r wtxt">💧 น้ำ (หน่วย)</th><th className="r">น้ำ ต้น→ปลาย</th>
+     <th className="r etxt">⚡ ไฟ (หน่วย)</th><th className="r">ไฟ ต้น→ปลาย</th></tr></thead>
+    <tbody>{rows.map(r=><tr key={r.month}>
+     <td><b>{monthTH(r.month)}</b></td>
+     <td className="r wtxt"><b>{usage(r.wStart,r.wEnd)}</b></td>
+     <td className="r"><span className="mut">{r.wStart}→{r.wEnd}</span></td>
+     <td className="r etxt"><b>{usage(r.eStart,r.eEnd)}</b></td>
+     <td className="r"><span className="mut">{r.eStart}→{r.eEnd}</span></td></tr>)}</tbody></table></div>}
+   <div className="mut" style={{marginTop:10}}>หน่วยที่ใช้ = ปลาย − ต้น (คิดมิเตอร์วนรอบให้แล้ว)</div>
+  </Modal>;
+ }
+ // ── ประวัติทั้งอาคาร: ทุกห้อง × เดือนล่าสุด (สูงสุด 8 เดือน) ของชนิดที่เลือก ──
+ const isW=util==='water', utxt=isW?'wtxt':'etxt';
+ const showM=months.slice(-8);
+ return <Modal title={'📊 ประวัติการใช้'+(isW?'น้ำ (กปภ.)':'ไฟ (กฟภ.)')} onClose={onClose}>
+  <div className="mut" style={{marginBottom:8}}>หน่วยที่ใช้ต่อเดือน · ทุกห้องในอาคารนี้ · สลับน้ำ/ไฟจากปุ่มในหน้าจดมิเตอร์</div>
+  {showM.length===0?<div className="mut">ยังไม่มีประวัติ</div>:
+  <div className="scrollx"><table className="t">
+   <thead><tr><th>ห้อง</th>{showM.map(m=><th key={m} className={'r '+utxt}>{monthTH(m)}</th>)}</tr></thead>
+   <tbody>{units.map(u=><tr key={u.id}><td><b>{u.code}</b></td>
+    {showM.map(m=>{const r=allR.find(x=>x.unitId===u.id&&x.month===m);
+     const v=r?usage(isW?r.wStart:r.eStart,isW?r.wEnd:r.eEnd):null;
+     return <td key={m} className={'r '+utxt}>{v==null?<span className="mut">-</span>:v}</td>})}</tr>)}
+   <tr style={{borderTop:'2px solid var(--g3)'}}><td><b>รวม</b></td>
+    {showM.map(m=>{let s=0;units.forEach(u=>{const r=allR.find(x=>x.unitId===u.id&&x.month===m);if(r)s+=usage(isW?r.wStart:r.eStart,isW?r.wEnd:r.eEnd)});
+     return <td key={m} className={'r '+utxt}><b>{s||'-'}</b></td>})}</tr></tbody></table></div>}
+ </Modal>;
+}
+// ===== บิล =====
+function Bills({refresh,go}){
+ const [month,setMonth]=useMonth();
+ const [view,setView]=useState(null); // ป๊อปอัพดูรายละเอียดห้อง (ไม่เปลี่ยน TAB)
+ const [payU,setPayU]=useState(null); // ฟอร์มกรอกวันที่จ่าย (เหมือนหน้าห้อง)
+ const utilM=addMonth(month,-1);
+ const bills=Repo.list('bills',b=>b.rentMonth===month&&(Repo.get('units',b.unitId)||{}).propertyId===curPid()).sort((a,b)=>{
+  const ua=Repo.get('units',a.unitId)||{code:''},ub=Repo.get('units',b.unitId)||{code:''};return ua.code.localeCompare(ub.code)});
+ const [pay,setPay]=useState(null);
+ const rates=curRates();
+ // เลือกคอลัมน์ที่จะแสดงในตารางบิล (จำไว้ใน localStorage)
+ const COLDEFS=[{k:'rent',l:'ค่าเช่า'},{k:'svc',l:'ค่าบริการ'},{k:'water',l:'ค่าน้ำ'},{k:'elec',l:'ค่าไฟ'},{k:'net',l:'ค่าเน็ต'},{k:'area',l:'ค่าพื้นที่'},{k:'status',l:'วันที่จ่าย'}];
+ const defCols={rent:true,svc:true,water:true,elec:true,net:true,area:true,status:true};
+ const [cols,setCols]=useState(()=>{try{return{...defCols,...JSON.parse(localStorage.getItem('rentalapp_billcols')||'{}')}}catch(e){return defCols}});
+ const toggleCol=k=>{const n={...cols,[k]:!cols[k]};setCols(n);try{localStorage.setItem('rentalapp_billcols',JSON.stringify(n))}catch(e){}};
+ const nCol=1+COLDEFS.filter(c=>cols[c.k]).length+2; // ห้อง + คอลัมน์ที่เลือก + รวม + ปุ่ม
+ const genBills=()=>{
+  const units=unitsOfCur().filter(u=>isOccupied(u.id));
+  const readings=Repo.list('meter_readings',r=>r.month===utilM);
+  let made=0,skipNoRead=0,skipHave=0;
+  units.forEach(u=>{
+   if(bills.find(b=>b.unitId===u.id)){skipHave++;return}
+   const rd=readings.find(r=>r.unitId===u.id);
+   if(!rd){skipNoRead++;return}
+   const c=activeContract(u.id);
+   const wU=usage(rd.wStart,rd.wEnd),eU=usage(rd.eStart,rd.eEnd);
+   const ct=c?c.type:(u.contractType||'old');
+   const items=calcBill({rent:c?c.rent:u.rent,service:c?c.service:u.service,svcX:u.serviceExtra||0,trash:u.trash||0,othF:u.otherFee||0,disc:u.discount||0,wUnits:wU,eUnits:eU,rates,contractType:ct,internet:u.internet||0,area:u.areaFee||0});
+   Repo.create('bills',{unitId:u.id,contractId:c?c.id:null,tenantId:c?c.tenantId:null,rentMonth:month,utilMonth:utilM,issueDate:today(),
+    wStart:rd.wStart,wEnd:rd.wEnd,wUnits:wU,eStart:rd.eStart,eEnd:rd.eEnd,eUnits:eU,items,total:items.total,
+    status:'ค้างชำระ',paidDate:null,payMethod:null,receiptNo:'',ratesSnapshot:{...rates},note:''});made++});
+  alert('ออกบิล '+made+' ห้อง'+(skipNoRead?' / ข้าม '+skipNoRead+' ห้อง (ยังไม่จดมิเตอร์ '+monthTH(utilM)+')':'')+(skipHave?' / มีบิลแล้ว '+skipHave:''));refresh()};
+ const doPay=()=>{
+  const rno=pay.receiptNo||('R'+month.replace('-','')+'-'+String(pay.bill.id).padStart(4,'0'));
+  Repo.update('bills',pay.bill.id,{status:'ชำระแล้ว',paidDate:pay.date,payMethod:pay.method,receiptNo:rno});
+  Repo.create('payments',{billId:pay.bill.id,amount:pay.bill.total,date:pay.date,method:pay.method,ref:pay.ref||'',receiptNo:rno});
+  setPay(null);refresh()};
+ const unpaidSum=bills.filter(b=>b.status==='ค้างชำระ').reduce((s,b)=>s+b.total,0);
+ return <div>
+  <div className="card"><div className="row">
+   <F l="เดือนค่าเช่า (บิล)"><input type="month" value={month} onChange={e=>setMonth(e.target.value)}/></F>
+   <button className="btn" onClick={genBills}>🧾 ออกบิลเดือนนี้</button>
+   <button className="btn line" onClick={()=>printReceipts(bills)}>🖨️ พิมพ์ใบเสร็จทั้งหมด</button></div>
+   <div className="mut">บิล {monthTH(month)} = ค่าเช่า {monthTH(month)} + ค่าน้ำ/ไฟ {monthTH(utilM)} · รวมค้างชำระ {fmt(unpaidSum)} บาท</div>
+   <div className="row" style={{marginTop:10,gap:'6px 14px',flexWrap:'wrap',alignItems:'center'}}>
+    <b style={{fontSize:12,color:'var(--mut)'}}>แสดงคอลัมน์:</b>
+    {COLDEFS.map(c=><label key={c.k} style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:13,cursor:'pointer',margin:0}}>
+     <input type="checkbox" checked={!!cols[c.k]} onChange={()=>toggleCol(c.k)} style={{width:'auto',margin:0}}/>{c.l}</label>)}</div></div>
+  <div className="card"><div className="scrollx"><table className="t">
+   <thead><tr><th>ห้อง</th><th className="r">รวม</th>{cols.status&&<th>วันที่จ่าย</th>}
+    {cols.rent&&<th className="r">ค่าเช่า</th>}{cols.svc&&<th className="r">ค่าบริการ</th>}
+    {cols.water&&<th className="r">ค่าน้ำ</th>}{cols.elec&&<th className="r">ค่าไฟ</th>}
+    {cols.net&&<th className="r">ค่าเน็ต</th>}{cols.area&&<th className="r">ค่าพื้นที่</th>}
+    <th></th></tr></thead>
+   <tbody>{bills.length===0&&<tr><td colSpan={nCol} className="mut">ยังไม่มีบิลเดือนนี้ — กด "ออกบิลเดือนนี้" (ต้องจดมิเตอร์ {monthTH(utilM)} ก่อน)</td></tr>}
+   {bills.map(b=>{const u=Repo.get('units',b.unitId)||{};const it=b.items;
+    const svc=(it.service||0)+(it.svcX||0)+(it.trash||0)+(it.othF||0)+(it.disc||0)+(it.cfSum||0)+(it.other||0);
+    const w=(it.wH||0)+(it.wI||0)+(it.wJ||0)+(it.wK||0), e=(it.eL||0)+(it.eM||0)+(it.eN||0)+(it.eO||0);
+    const z=v=>v?fmt(v):'-';
+    return <tr key={b.id}><td><span className="plink" title="ดูรายละเอียดห้อง" onClick={()=>setView(u)}>{u.code}</span></td>
+    <td className="r tot">{z(b.total)}</td>
+    {cols.status&&<td><span className="tap" title="กดเพื่อกรอกวันที่จ่าย" onClick={()=>setPayU({u,b,date:b.paidDate||today()})}>
+     {b.status==='ค้างชำระ'?<span className="tag r">ค้างจ่าย</span>:<span className="tag g">{b.paidDate?dateTH(b.paidDate):'จ่ายแล้ว'}</span>}</span></td>}
+    {cols.rent&&<td className="r">{z(it.rent)}</td>}
+    {cols.svc&&<td className="r">{z(svc)}</td>}
+    {cols.water&&<td className="r">{z(w)}</td>}
+    {cols.elec&&<td className="r">{z(e)}</td>}
+    {cols.net&&<td className="r">{z(it.internet)}</td>}
+    {cols.area&&<td className="r">{z(it.area)}</td>}
+    <td><div className="row" style={{gap:4,flexWrap:'nowrap'}}>
+     {b.status==='ค้างชำระ'&&<button className="btn sm" onClick={()=>setPay({bill:b,date:today(),method:'โอน',ref:'',receiptNo:''})}>รับเงิน</button>}
+     <button className="btn sm line" onClick={()=>printReceipts([b])}>ใบเสร็จ</button>
+     <button className="btn sm red" onClick={()=>{if(confirm('ลบบิลห้อง '+u.code+'?')){Repo.remove('bills',b.id);refresh()}}}>ลบ</button>
+    </div></td></tr>})}
+  </tbody></table></div></div>
+  {view&&<RoomViewModal unit={view} onClose={()=>setView(null)} onEdit={()=>{OPEN_UNIT=view.id;setView(null);go('units')}}/>}
+  {payU&&(()=>{const{u,b}=payU;
+   return <Modal title={'วันที่จ่าย — ห้อง '+u.code} onClose={()=>setPayU(null)}>
+    <div className="mut" style={{marginBottom:10}}>บิลเดือน {monthTH(b.rentMonth)} · ยอด {fmt(b.total)} บาท · สถานะปัจจุบัน: {b.status}{b.paidDate?' ('+dateTH(b.paidDate)+')':''}</div>
+    <F l="วันที่จ่าย"><input type="date" value={payU.date} onChange={e=>setPayU({...payU,date:e.target.value})}/></F>
+    <div className="row">
+     <button className="btn" onClick={()=>{
+      const rno=b.receiptNo||('R'+b.rentMonth.replace('-','')+'-'+String(b.id).padStart(4,'0'));
+      Repo.update('bills',b.id,{status:'ชำระแล้ว',paidDate:payU.date,payMethod:b.payMethod||'โอน',receiptNo:rno});
+      const ps=Repo.list('payments',p=>p.billId===b.id);
+      if(ps.length===0)Repo.create('payments',{billId:b.id,amount:b.total,date:payU.date,method:'โอน',ref:'',receiptNo:rno});
+      else ps.forEach(p=>Repo.update('payments',p.id,{date:payU.date}));
+      setPayU(null);refresh()}}>✓ จ่ายแล้ว วันที่ที่เลือก</button>
+     <button className="btn warn" onClick={()=>{
+      Repo.update('bills',b.id,{status:'ค้างชำระ',paidDate:null,payMethod:null});
+      Repo.list('payments',p=>p.billId===b.id).forEach(p=>Repo.remove('payments',p.id));
+      setPayU(null);refresh()}}>ค้างจ่าย (ยังไม่จ่าย)</button>
+     <button className="btn gray" onClick={()=>setPayU(null)}>ปิด</button>
+    </div>
+   </Modal>})()}
+  {pay&&<Modal title={'รับชำระ ห้อง '+(Repo.get('units',pay.bill.unitId)||{}).code+' — '+fmt(pay.bill.total)+' บาท'} onClose={()=>setPay(null)}>
+   <div className="grid2">
+    <F l="วันที่ชำระ"><input type="date" value={pay.date} onChange={e=>setPay({...pay,date:e.target.value})}/></F>
+    <F l="ช่องทาง"><select value={pay.method} onChange={e=>setPay({...pay,method:e.target.value})}><option>โอน</option><option>เงินสด</option></select></F>
+    <F l="อ้างอิง/สลิป"><input value={pay.ref} onChange={e=>setPay({...pay,ref:e.target.value})}/></F>
+    <F l="เลขที่ใบเสร็จ (เว้นให้ระบบรัน)"><input value={pay.receiptNo} onChange={e=>setPay({...pay,receiptNo:e.target.value})}/></F>
+   </div>
+   <button className="btn" onClick={doPay}>✅ ยืนยันรับเงิน</button>
+  </Modal>}
+ </div>;
+}
+// ===== พิมพ์ใบเสร็จ (เข้า #printArea แล้ว window.print) =====
+function receiptHTML(b){
+ const u=Repo.get('units',b.unitId)||{},p=Repo.get('properties',u.propertyId)||Repo.list('properties')[0]||{},it=b.items;
+ const t=b.tenantId?Repo.get('tenants',b.tenantId):null;
+ const line=(n,a)=>a>0?'<tr><td>'+n+'</td><td class="r">'+fmt(a)+'</td></tr>':'';
+ return '<div class="receipt">'+
+  '<div style="display:flex;justify-content:space-between"><div><b style="font-size:15px">'+p.name+'</b><br>'+
+  (p.address||'')+' โทร '+(p.phone||'')+'</div><div style="text-align:right"><b>ใบเสร็จรับเงิน</b><br>เลขที่ '+(b.receiptNo||'—')+'<br>วันที่ '+dateTH(b.issueDate)+'</div></div>'+
+  '<div style="margin:6px 0">ห้อง <b>'+u.code+'</b>'+(t?' ผู้เช่า '+t.name:'')+' · ค่าเช่าเดือน <b>'+monthTHfull(b.rentMonth)+'</b> · ค่าน้ำ-ไฟเดือน <b>'+monthTHfull(b.utilMonth)+'</b></div>'+
+  '<table class="pt"><tr><th>รายการ</th><th style="width:90px">จำนวนเงิน</th></tr>'+
+  line('ค่าเช่าห้อง เดือน '+monthTH(b.rentMonth),it.rent)+
+  line('ค่าบริการ',it.service)+line('ค่าบริการเสริม',it.svcX||0)+line('ค่าขยะ',it.trash||0)+line('ค่าอื่นๆ รายเดือน',it.othF||0)+
+  ((it.disc||0)!==0?('<tr><td>ส่วนลด</td><td class="r">'+fmt(it.disc)+'</td></tr>'):'')+
+  '<tr><td>ค่าน้ำประปา '+b.wUnits+' หน่วย (มิเตอร์ '+b.wStart+'→'+b.wEnd+')</td><td class="r">'+fmt(it.wH)+'</td></tr>'+
+  line('ความเสี่ยงจัดเก็บน้ำ 10%',it.wI)+line('กำไรน้ำ 10%',it.wJ)+line('ค่าดำเนินการประปา',it.wK)+
+  '<tr><td>ค่าไฟฟ้า '+b.eUnits+' หน่วย (มิเตอร์ '+b.eStart+'→'+b.eEnd+')</td><td class="r">'+fmt(it.eL)+'</td></tr>'+
+  line('ความเสี่ยงจัดเก็บไฟ 10%',it.eM)+line('กำไรไฟ 10%',it.eN)+line('ค่าดำเนินการไฟฟ้า',it.eO)+
+  line('อินเทอร์เน็ต',it.internet)+line('ค่าขอใช้พื้นที่ด้านข้าง',it.area)+line('อื่นๆ',it.other)+
+  ((it.cf||[]).map(x=>line(x.name,x.amount)).join(''))+
+  '<tr><td><b>รวมทั้งสิ้น</b></td><td class="r"><b>'+fmt(b.total)+'</b></td></tr></table>'+
+  '<div style="margin-top:8px;display:flex;justify-content:space-between"><span>สถานะ: '+b.status+(b.paidDate?' ('+dateTH(b.paidDate)+' / '+b.payMethod+')':'')+'</span>'+
+  '<span>ผู้รับเงิน ________________</span></div>'+
+  ((p.bank||p.promptpay)?('<div style="margin-top:5px;font-size:11px">ช่องทางชำระ: '+(p.bank?p.bank+' '+(p.bankAcc||'')+(p.bankName?' ('+p.bankName+')':''):'')+(p.promptpay?' · พร้อมเพย์ '+p.promptpay:'')+'</div>'):'')+
+  '</div>';
+}
+function printReceipts(bills){
+ if(!bills.length){alert('ไม่มีบิล');return}
+ document.getElementById('printArea').innerHTML=bills.map(receiptHTML).join('');
+ setTimeout(()=>window.print(),100);
+}
+// ===== ตารางสรุปรายเดือน (ติดหน้าหอ) =====
+function Summary(){
+ const [month,setMonth]=useMonth();
+ const bills=Repo.list('bills',b=>b.rentMonth===month&&(Repo.get('units',b.unitId)||{}).propertyId===curPid()).sort((a,b)=>{
+  const ua=Repo.get('units',a.unitId)||{code:''},ub=Repo.get('units',b.unitId)||{code:''};return ua.code.localeCompare(ub.code)});
+ const p=curProp();
+ const sum=k=>bills.reduce((s,b)=>s+(k==='total'?b.total:(b.items[k]||0)),0);
+ const printSummary=()=>{
+  const rows=bills.map((b,i)=>{const u=Repo.get('units',b.unitId)||{};const it=b.items;
+   return '<tr><td>'+(i+1)+'</td><td>'+u.code+'</td><td class="r">'+fmt(it.rent)+'</td><td class="r">'+fmt(it.service)+'</td>'+
+   '<td class="r">'+b.wUnits+'</td><td class="r">'+fmt(it.wH+it.wI+it.wJ+it.wK)+'</td>'+
+   '<td class="r">'+b.eUnits+'</td><td class="r">'+fmt(it.eL+it.eM+it.eN+it.eO)+'</td>'+
+   '<td class="r">'+fmt((it.area||0)+(it.internet||0)+(it.other||0)+(it.svcX||0)+(it.trash||0)+(it.othF||0)+(it.disc||0)+(it.cfSum||0))+'</td><td class="r"><b>'+fmt(b.total)+'</b></td></tr>'}).join('');
+  document.getElementById('printArea').innerHTML=
+   '<div><h3 style="text-align:center">'+p.name+' — สรุปค่าเช่าประจำเดือน '+monthTHfull(month)+'</h3>'+
+   '<p style="text-align:center;font-size:12px">ค่าเช่าเดือน '+monthTH(month)+' + ค่าน้ำ-ไฟเดือน '+monthTH(addMonth(month,-1))+' · ติดต่อ '+p.owner+' โทร '+p.phone+'</p>'+
+   '<table class="pt"><tr><th>ลำดับ</th><th>ห้อง</th><th>ค่าเช่า</th><th>ค่าบริการ</th><th>น้ำ(หน่วย)</th><th>ค่าน้ำ</th><th>ไฟ(หน่วย)</th><th>ค่าไฟ</th><th>อื่นๆ</th><th>รวม</th></tr>'+rows+
+   '<tr><td colspan="2"><b>รวม</b></td><td class="r"><b>'+fmt(sum('rent'))+'</b></td><td class="r"><b>'+fmt(sum('service'))+'</b></td><td></td><td class="r"><b>'+
+   fmt(bills.reduce((s,b)=>s+b.items.wH+b.items.wI+b.items.wJ+b.items.wK,0))+'</b></td><td></td><td class="r"><b>'+
+   fmt(bills.reduce((s,b)=>s+b.items.eL+b.items.eM+b.items.eN+b.items.eO,0))+'</b></td><td></td><td class="r"><b>'+fmt(sum('total'))+'</b></td></tr></table></div>';
+  setTimeout(()=>window.print(),100)};
+ return <div>
+  <div className="card"><div className="row">
+   <F l="เดือน"><input type="month" value={month} onChange={e=>setMonth(e.target.value)}/></F>
+   <button className="btn" onClick={printSummary}>🖨️ พิมพ์ตารางติดหน้าหอ</button></div>
+   <div className="mut">รวมทั้งเดือน {fmt(sum('total'))} บาท · {bills.length} ห้อง</div></div>
+  <div className="card"><div className="scrollx"><table className="t">
+   <thead><tr><th>ห้อง</th><th className="r">ค่าเช่า</th><th className="r">บริการ</th><th className="r">น้ำ</th><th className="r">ไฟ</th><th className="r">อื่นๆ</th><th className="r">รวม</th><th>สถานะ</th></tr></thead>
+   <tbody>{bills.map(b=>{const u=Repo.get('units',b.unitId)||{};const it=b.items;
+    return <tr key={b.id}><td><b>{u.code}</b></td><td className="r">{fmt(it.rent)}</td><td className="r">{fmt(it.service)}</td>
+    <td className="r">{fmt(it.wH+it.wI+it.wJ+it.wK)}</td><td className="r">{fmt(it.eL+it.eM+it.eN+it.eO)}</td>
+    <td className="r">{fmt((it.area||0)+(it.internet||0)+(it.other||0)+(it.svcX||0)+(it.trash||0)+(it.othF||0)+(it.disc||0)+(it.cfSum||0))}</td><td className="r tot">{fmt(b.total)}</td><td>{statusTag(b.status)}</td></tr>})}
+  </tbody></table></div></div>
+ </div>;
+}
+// ===== ค่าใช้จ่าย (รายอาคาร เหมือนจดมิเตอร์) =====
+const LEDGER_KEYS=['washer','depositIn','insuranceIn','otherIncome','water','elec','maid','repair','care','trash','depositRefund','insuranceRefund','otherExpense','otherDebt'];
+function Expenses({refresh}){
+ const [month,setMonth]=useMonth();
+ const pid=curPid();
+ const loadF=()=>{const r=Repo.list('ledger',x=>x.propertyId===pid&&x.month===month)[0]||{};
+  const o={};LEDGER_KEYS.forEach(k=>o[k]=(r[k]!=null&&r[k]!==0)?r[k]:'');return o};
+ const [f,setF]=useState(loadF);
+ React.useEffect(()=>{setF(loadF())},[month,pid]);
+ const num=k=>+f[k]||0;
+ // ── ค่าที่ดึงมาอัตโนมัติ ──
+ const uset=new Set(unitsOfCur().map(u=>u.id));
+ const rentIncome=Repo.list('payments',x=>x.date&&x.date.slice(0,7)===month&&uset.has((Repo.get('bills',x.billId)||{}).unitId)).reduce((s,x)=>s+x.amount,0);
+ const rentDebt=Repo.list('bills',b=>b.rentMonth===month&&b.status==='ค้างชำระ'&&uset.has(b.unitId)).reduce((s,b)=>s+b.total,0);
+ const totalIncome=rentIncome+num('washer')+num('depositIn')+num('insuranceIn')+num('otherIncome');
+ const totalExpense=num('water')+num('elec')+num('maid')+num('repair')+num('care')+num('trash')+num('depositRefund')+num('insuranceRefund')+num('otherExpense');
+ const net=totalIncome-totalExpense;
+ const totalDebt=rentDebt+num('otherDebt');
+ const save=()=>{const data={propertyId:pid,month};LEDGER_KEYS.forEach(k=>data[k]=+f[k]||0);
+  const ex=Repo.list('ledger',x=>x.propertyId===pid&&x.month===month)[0];
+  ex?Repo.update('ledger',ex.id,data):Repo.create('ledger',data);
+  alert('บันทึกรับ/จ่าย เดือน '+monthTH(month)+' แล้ว');refresh()};
+ const IN=(k,l)=><div className="step" style={{padding:'7px 0',alignItems:'center'}}><div style={{flex:1}}>{l}</div>
+   <div style={{width:150}}><input type="number" placeholder="0" style={{textAlign:'right'}} value={f[k]} onChange={e=>setF({...f,[k]:e.target.value})}/></div></div>;
+ const RO=(l,v,note)=><div className="step" style={{padding:'7px 0',alignItems:'center'}}><div style={{flex:1}}>{l} <span className="mut">{note}</span></div>
+   <div style={{width:150,textAlign:'right'}}><b>{fmt(v)}</b> <span className="mut">🔒</span></div></div>;
+ const TOT=(l,v,color)=><div className="step" style={{padding:'9px 0',borderTop:'2px solid var(--g3)',borderBottom:0}}><div style={{flex:1}}><b style={{fontSize:15}}>{l}</b></div>
+   <div style={{width:150,textAlign:'right'}}><b style={{color:color||'var(--g1)',fontSize:17,fontFamily:'Prompt,sans-serif'}}>{fmt(v)}</b></div></div>;
+ return <div>
+  <div className="card"><div className="row" style={{justifyContent:'space-between'}}>
+   <F l="เดือน"><input type="month" value={month} onChange={e=>setMonth(e.target.value)}/></F>
+   <button className="btn" onClick={save}>💾 บันทึก</button></div>
+   <div className="mut">สรุปรับ/จ่ายของ {curProp().shortName||curProp().name} เดือน {monthTHfull(month)} · ช่อง 🔒 ดึงจากระบบอัตโนมัติ · ช่องอื่นกรอกเองแล้วกดบันทึก</div></div>
+  <div className="card"><h2>💰 รายรับ</h2>
+   {RO('รายได้ค่าเช่ารวม',rentIncome,'(เก็บได้จริงเดือนนี้)')}
+   {IN('washer','รายได้เครื่องซักผ้า')}
+   {IN('depositIn','ค่ามัดจำ')}
+   {IN('insuranceIn','ค่าประกันห้อง')}
+   {IN('otherIncome','รายได้อื่น ๆ')}
+   {TOT('รวมรายรับ',totalIncome,'var(--ok)')}</div>
+  <div className="card"><h2>💸 รายจ่าย</h2>
+   {IN('water','ค่าน้ำจ่ายจริง')}
+   {IN('elec','ค่าไฟจ่ายจริง')}
+   {IN('maid','ค่าแม่บ้าน')}
+   {IN('repair','ค่าซ่อมแซม')}
+   {IN('care','ค่าดูแล')}
+   {IN('trash','ค่าขยะ')}
+   {IN('depositRefund','เงินคืนมัดจำ')}
+   {IN('insuranceRefund','เงินคืนค่าประกันห้อง')}
+   {IN('otherExpense','ค่าอื่น ๆ')}
+   {TOT('รวมรายจ่าย',totalExpense,'var(--red)')}</div>
+  <div className="card curp2">{TOT('คงเหลือ (รายรับ − รายจ่าย)',net,net<0?'var(--red)':'var(--ok)')}</div>
+  <div className="card"><h2>📕 หนี้สิน</h2>
+   {RO('หนี้ค่าเช่า',rentDebt,'(บิลค้างชำระเดือนนี้)')}
+   {IN('otherDebt','หนี้อื่น ๆ')}
+   {TOT('รวมหนี้สิน',totalDebt,'var(--warn)')}</div>
+ </div>;
+}
+// ===== ตั้งค่า =====
+function Settings({refresh}){
+ const doExport=()=>{const blob=new Blob([Repo.exportJSON()],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rental-backup-'+today()+'.json';a.click()};
+ const doImport=(e)=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=async()=>{try{
+   if(!confirm('นำเข้าจะแทนที่ข้อมูลบนคลาวด์ทั้งหมดด้วยข้อมูลในไฟล์นี้ ยืนยัน?'))return;
+   Repo.importJSON(rd.result);await forceSync();
+   if(SYNC.state==='error')throw new Error('ส่งขึ้นคลาวด์ไม่สำเร็จ ลองใหม่อีกครั้ง');
+   alert('นำเข้าและบันทึกขึ้นคลาวด์แล้ว');location.reload()
+  }catch(err){alert('ผิดพลาด: '+err.message)}};rd.readAsText(f)};
+ return <div>
+  <div className="card"><h2>สำรองข้อมูล (สำคัญ!)</h2>
+   <div className="mut" style={{marginBottom:10}}>เฟส 2 ข้อมูลหลักอยู่บนคลาวด์ (Supabase) ทุกเครื่องเห็นชุดเดียวกัน — แนะนำส่งออกไฟล์ backup เก็บไว้เป็นประจำเผื่อกรณีฉุกเฉิน</div>
+   <div className="row">
+    <button className="btn" onClick={doExport}>⬇️ ส่งออกข้อมูล (backup)</button>
+    <label className="btn line" style={{display:'inline-block'}}>⬆️ นำเข้าข้อมูล<input type="file" accept=".json" style={{display:'none'}} onChange={doImport}/></label>
+   </div></div>
+  <div className="card"><h2>การตั้งค่าอาคารย้ายไปไหน?</h2>
+   <div style={{lineHeight:1.9,fontSize:14}}>
+    ข้อมูลอาคาร + อัตราค่าน้ำ-ไฟ ของแต่ละอาคาร แก้ได้ที่<br/>
+    <b>หน้าแรก → แตะชื่ออาคาร → หน้าข้อมูลอาคาร</b></div></div>
+  <div className="card"><h2>บัญชีผู้ใช้</h2>
+   <div className="mut" style={{marginBottom:10}}>ออกจากระบบแล้ว ต้องใส่อีเมล+รหัสผ่านใหม่จึงจะเห็นข้อมูลอีกครั้ง</div>
+   <button className="btn line" onClick={async()=>{if(unsynced())await forceSync();await supa.auth.signOut();location.reload()}}>🚪 ออกจากระบบ</button>
+  </div>
+  <div className="card"><h2>เขตอันตราย</h2>
+   <button className="btn red" onClick={async()=>{if(confirm('ล้างข้อมูลทั้งหมดบนคลาวด์ (ทุกเครื่องจะว่างเปล่า)? การกระทำนี้ย้อนกลับไม่ได้ (ควรส่งออก backup ก่อน)')&&confirm('ยืนยันอีกครั้ง: ลบข้อมูลทุกอาคาร ทุกห้อง ทุกบิล ถาวร?')){Repo.reset();await forceSync();location.reload()}}}>♻️ ล้างข้อมูลทั้งหมด (เริ่มระบบเปล่า)</button>
+  </div>
+ </div>;
+}
+// จุดแสดงสถานะบันทึกขึ้นคลาวด์ (เขียว=บันทึกแล้ว เหลือง=กำลังบันทึก แดง=ผิดพลาด แตะเพื่อลองใหม่)
+function SyncDot(){
+ const [s,setS]=useState(SYNC.state);
+ useEffect(()=>{const f=()=>setS(SYNC.state);window.addEventListener('syncstate',f);return()=>window.removeEventListener('syncstate',f)},[]);
+ const c=s==='error'?'#e03131':s==='saving'?'#f5a623':'#3bb273';
+ const t=s==='error'?'บันทึกขึ้นคลาวด์ไม่สำเร็จ — แตะเพื่อลองใหม่':s==='saving'?'กำลังบันทึกขึ้นคลาวด์…':'ข้อมูลบันทึกบนคลาวด์แล้ว';
+ return <button className="theme-btn" title={t} onClick={()=>syncNow()}>
+  <span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:c,boxShadow:'0 0 4px '+c}}/></button>;
+}
+// ===== App =====
+function App(){
+ const [page,setPage]=useState('home');
+ const [sim,setSim]=useState(false);
+ const [theme,setTheme]=useState(document.documentElement.dataset.theme);
+ const [tick,setTick]=useState(0);
+ const refresh=()=>setTick(t=>t+1);
+ const bldPages=['prop','units','contracts','meters','bills','expenses','summary'];
+ const bc=bldPages.includes(page)?(curProp().color||null):null;
+ const tstyle=bc?{'--g1':shade(bc,-0.38),'--g2':bc,'--g3':shade(bc,0.15)}:{};
+ const P={home:<Home refresh={refresh} go={setPage}/>,prop:<PropertyPage refresh={refresh} go={setPage}/>,units:<Units refresh={refresh} go={setPage}/>,tenants:<Tenants refresh={refresh} go={setPage}/>,
+  meters:<Meters refresh={refresh}/>,bills:<Bills refresh={refresh} go={setPage}/>,expenses:<Expenses refresh={refresh}/>,summary:<Summary/>,settings:<Settings refresh={refresh}/>};
+ return <div style={tstyle}>
+  <header className="top"><div><h1>🏢 ระบบบริหารการเช่า</h1>
+   {page==='home'
+    ?<div className="sub">ภาพรวมทุกอาคาร</div>
+    :<select className="prop-sel" value={curPid()} onChange={e=>{setCurPid(e.target.value);refresh()}}>
+      {Repo.list('properties').map(p=><option key={p.id} value={p.id}>{propIcon(p.type)} {p.shortName||p.name}</option>)}
+     </select>}</div>
+   <div className="row" style={{gap:0,flexWrap:'nowrap'}}>
+    <div className="date-chip">{dateTH(today())}</div>
+    <SyncDot/>
+    <button className="theme-btn sim-btn" title="จำลองหน้าจอมือถือ" onClick={()=>setSim(true)}>📱</button>
+    <button className="theme-btn" title="สลับโหมดกลางวัน/กลางคืน" onClick={()=>{
+     const t=document.documentElement.dataset.theme==='dark'?'light':'dark';
+     document.documentElement.dataset.theme=t;localStorage.setItem('rentalapp_theme',t);setTheme(t);
+    }}>{theme==='dark'?'☀️':'🌙'}</button>
+   </div></header>
+  <main key={tick}>{P[page]}</main>
+  <nav className="bottom">{PAGES.map(p=><button key={p.k} className={page===p.k?'on':''} onClick={()=>setPage(p.k)}>
+   <span className="ic">{p.ic}</span>{p.l}</button>)}</nav>
+  {sim&&<div className="sim-bg" onClick={e=>{if(e.target===e.currentTarget){setSim(false);refresh()}}}>
+   <div>
+    <div className="row" style={{justifyContent:'space-between',marginBottom:8}}>
+     <b style={{color:'#fff',fontFamily:'Prompt,sans-serif'}}>📱 ตัวอย่างบนมือถือ — ใช้งานได้จริง ข้อมูลชุดเดียวกัน</b>
+     <button className="btn sm gray" onClick={()=>{setSim(false);refresh()}}>✕ ปิด</button>
+    </div>
+    <div className="phone"><iframe src={location.href.split('#')[0]} title="mobile-preview"/></div>
+   </div></div>}
+ </div>;
+}
+// ===== Login (เฟส 2) =====
+function Login(){
+ const [email,setEmail]=useState('');const [pw,setPw]=useState('');
+ const [err,setErr]=useState('');const [busy,setBusy]=useState(false);
+ const go=async e=>{e.preventDefault();setBusy(true);setErr('');
+  const {error}=await supa.auth.signInWithPassword({email:email.trim(),password:pw});
+  if(error){setBusy(false);setErr(error.message.indexOf('Invalid')>=0?'อีเมลหรือรหัสผ่านไม่ถูกต้อง':(error.message.indexOf('confirm')>=0?'อีเมลยังไม่ถูกยืนยันในระบบ':error.message))}
+  else location.reload()};
+ return <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+  <form className="card" style={{maxWidth:380,width:'100%'}} onSubmit={go}>
+   <h2 style={{textAlign:'center'}}>🏢 ระบบบริหารการเช่า</h2>
+   <div className="mut" style={{textAlign:'center',marginBottom:14}}>เข้าสู่ระบบเพื่อใช้งาน — ข้อมูลของคุณอยู่บนคลาวด์อย่างปลอดภัย</div>
+   <label>อีเมล<input type="email" value={email} onChange={e=>setEmail(e.target.value)} autoFocus required/></label>
+   <label>รหัสผ่าน<input type="password" value={pw} onChange={e=>setPw(e.target.value)} required/></label>
+   {err&&<div style={{color:'var(--red)',margin:'8px 0'}}>⚠️ {err}</div>}
+   <button className="btn" style={{width:'100%',marginTop:12}} disabled={busy}>{busy?'กำลังเข้าสู่ระบบ…':'เข้าสู่ระบบ'}</button>
+  </form></div>;
+}
+// ===== Bootstrap: เช็คล็อกอิน → โหลดข้อมูลจากคลาวด์ → เปิดแอป =====
+const _root=ReactDOM.createRoot(document.getElementById('root'));
+async function boot(){
+ try{
+  const {data:{session}}=await supa.auth.getSession();
+  if(!session){_root.render(<Login/>);return}
+  _root.render(<div style={{padding:'60px 20px',textAlign:'center',fontFamily:'Prompt,sans-serif'}}>⏳ กำลังโหลดข้อมูลจากคลาวด์…</div>);
+  _db=await fetchDB();
+  takeSnap();
+  if(!_db.properties.length){
+   // คลาวด์ยังว่าง — ถ้าเครื่องนี้มีข้อมูลเฟส 1 เดิม เสนอย้ายขึ้นคลาวด์ครั้งเดียว
+   let local=null;try{local=JSON.parse(localStorage.getItem(DB_KEY))}catch(e){}
+   if(local&&local.properties&&local.properties.length&&confirm('คลาวด์ยังว่าง แต่พบข้อมูลเดิมในเครื่องนี้ ('+local.properties.length+' อาคาร, '+(local.units||[]).length+' ห้อง)\n\nอัปโหลดข้อมูลเดิมขึ้นคลาวด์เลยหรือไม่?')){
+    _db=local;
+   }else{seedMinimal(_db)}
+  }
+  fixup(_db);
+  persist(); // ดันส่วนต่าง (ข้อมูลที่ย้าย/ฟิลด์ที่เติม) ขึ้นคลาวด์
+  _root.render(<App/>);
+ }catch(e){
+  console.error(e);
+  _root.render(<div style={{padding:'60px 20px',textAlign:'center',fontFamily:'Prompt,sans-serif'}}>
+   ❌ โหลดข้อมูลไม่สำเร็จ: {String((e&&e.message)||e)}<br/>
+   <button className="btn" style={{marginTop:14}} onClick={()=>location.reload()}>ลองใหม่</button></div>);
+ }
+}
+boot();
+</script>
+</body>
+</html>
