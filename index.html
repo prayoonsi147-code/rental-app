@@ -794,8 +794,23 @@ function Units({refresh,go}){
 // ===== โมดัลดูห้อง (ใช้ร่วมหน้าห้อง/หน้าผู้เช่า) =====
 function RoomViewModal({unit,onClose,onEdit}){
  const u=Repo.get('units',unit.id)||unit;const c=activeContract(u.id);
+ const [tab,setTab]=useState('info');
+ // ประวัติรายเดือนของห้อง: บิลทุกใบ (ใหม่→เก่า)
+ const hist=useMemo(()=>Repo.list('bills',b=>b.unitId===u.id).sort((a,b)=>a.rentMonth<b.rentMonth?1:-1),[u.id]);
+ const tenantOf=b=>{
+  if(b.tenantId)return tenantName(b.tenantId);
+  const mS=b.rentMonth+'-01',mE=b.rentMonth+'-31';
+  const ct=Repo.list('contracts',x=>x.unitId===u.id&&x.start&&x.start<=mE&&(!x.end||x.end>=mS))[0];
+  return ct?tenantName(ct.tenantId):'-';
+ };
+ const avg=k=>{const v=hist.map(b=>+b[k]||0);return v.length?Math.round(v.reduce((s,x)=>s+x,0)/v.length*10)/10:0};
  const R=({l,v})=><div className="step" style={{padding:'6px 0'}}><div style={{minWidth:140}} className="mut">{l}</div><div style={{flex:1}}><b>{v===0||v===''||v==null?'-':v}</b></div></div>;
  return <Modal title={'🚪 ห้อง '+u.code} onClose={onClose}>
+  <div className="row" style={{gap:6,marginBottom:10}}>
+   <button className={'btn sm'+(tab==='info'?'':' line')} onClick={()=>setTab('info')}>ข้อมูลห้อง</button>
+   <button className={'btn sm'+(tab==='hist'?'':' line')} onClick={()=>setTab('hist')}>📊 ประวัติ ({hist.length} เดือน)</button>
+  </div>
+  {tab==='info'&&<div>
   <R l="ผู้เช่า" v={c?tenantName(c.tenantId):'ไม่มีผู้เช่า (ว่าง)'}/>
   {c&&<R l="สัญญาเริ่ม" v={c.start?dateTH(c.start):'-'}/>}
   <R l={'ค่าเช่า'+(c?' 🔒 ตามสัญญา':' (ตั้งต้น)')} v={fmt(c?c.rent:u.rent)+' บาท/เดือน'}/>
@@ -814,6 +829,33 @@ function RoomViewModal({unit,onClose,onEdit}){
     {(u.amenities||[]).filter(x=>!STD_AMEN.includes(x)).map(x=><span key={x} className="tag g">✓ {x}</span>)}
    </div></div>
   <R l="หมายเหตุ" v={u.note}/>
+  </div>}
+  {tab==='hist'&&(hist.length===0
+   ?<div className="mut" style={{padding:'14px 0'}}>ยังไม่มีบิลของห้องนี้ — ประวัติจะแสดงเมื่อออกบิลเดือนแรก</div>
+   :<div style={{overflowX:'auto'}}>
+    <table className="t"><thead><tr>
+     <th>เดือน</th><th>ผู้เช่า</th><th style={{textAlign:'right'}}>ค่าเช่า</th>
+     <th style={{textAlign:'right'}}>น้ำ (หน่วย)</th><th style={{textAlign:'right'}}>ไฟ (หน่วย)</th>
+     <th style={{textAlign:'right'}}>รวมบิล</th><th>สถานะ</th>
+    </tr></thead><tbody>
+    {hist.map(b=><tr key={b.id}>
+     <td>{monthTH(b.rentMonth)}</td>
+     <td>{tenantOf(b)}</td>
+     <td style={{textAlign:'right'}}>{fmt(b.items?b.items.rent:0)}</td>
+     <td style={{textAlign:'right'}}>{b.wUnits==null?'-':fmt(b.wUnits)}</td>
+     <td style={{textAlign:'right'}}>{b.eUnits==null?'-':fmt(b.eUnits)}</td>
+     <td style={{textAlign:'right'}}><b>{fmt(b.total)}</b></td>
+     <td>{statusTag(b.status)}</td>
+    </tr>)}
+    <tr style={{fontWeight:600}}>
+     <td colSpan={3}>เฉลี่ย {hist.length} เดือน</td>
+     <td style={{textAlign:'right'}}>{fmt(avg('wUnits'))}</td>
+     <td style={{textAlign:'right'}}>{fmt(avg('eUnits'))}</td>
+     <td style={{textAlign:'right'}}>{fmt(Math.round(hist.reduce((s,b)=>s+(+b.total||0),0)/hist.length))}</td>
+     <td/>
+    </tr>
+    </tbody></table>
+   </div>)}
   <div className="row" style={{marginTop:10}}>
    <button className="btn" onClick={onEdit}>✏️ แก้ไขห้อง</button>
    <button className="btn gray" onClick={onClose}>ปิด</button>
