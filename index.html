@@ -1496,8 +1496,38 @@ function Expenses({refresh}){
    {TOT('รวมหนี้สิน',totalDebt,'var(--warn)')}</div>
  </div>;
 }
+/* ===== โครงรองรับ "จัดการบัญชีผู้ใช้" ในอนาคต (ยังไม่เปิดใช้) =====
+ - ตาราง public.app_users เตรียมไว้แล้วใน Supabase (id text + data jsonb + RLS auth_all)
+   โครง data ที่วางไว้: {authId, email, name, role:'owner'|'staff'|'viewer', active, createdAt}
+ - เพิ่ม/ลบผู้ใช้จริงต้องทำผ่าน Supabase Edge Function + service role key (client ทำไม่ได้ — ปลอดภัยตามที่ตั้งใจ)
+   ขั้นตอนเมื่อจะทำ: สร้าง Edge Function 'admin-users' ตรวจ role=owner จาก app_users → เรียก auth.admin API
+ - UI ที่วางไว้: การ์ด "บัญชีผู้ใช้" ด้านล่างนี้จะขยายเป็นตารางผู้ใช้ + ปุ่มเชิญ/ปิดการใช้งาน/เปลี่ยนบทบาท
+================================================================== */
+// เปลี่ยนรหัสผ่าน (จากในระบบ — ไม่ต้องผ่านอีเมล)
+function ChangePwModal({onClose}){
+ const [p1,setP1]=useState('');const [p2,setP2]=useState('');
+ const [err,setErr]=useState('');const [busy,setBusy]=useState(false);
+ const go=async()=>{
+  if(p1.length<6){setErr('รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร');return}
+  if(p1!==p2){setErr('รหัสผ่านสองช่องไม่ตรงกัน ลองพิมพ์ใหม่ (ระวังภาษาแป้นพิมพ์)');return}
+  setBusy(true);setErr('');
+  const {error}=await supa.auth.updateUser({password:p1});
+  if(error){setBusy(false);setErr(error.message.indexOf('different')>=0?'รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสเดิม':error.message)}
+  else{alert('✅ เปลี่ยนรหัสผ่านเรียบร้อย — ใช้รหัสใหม่นี้ล็อกอินทุกเครื่องตั้งแต่ครั้งถัดไป');onClose()}
+ };
+ return <Modal title="🔑 เปลี่ยนรหัสผ่าน" onClose={onClose}>
+  <F l="รหัสผ่านใหม่"><input type="password" value={p1} onChange={e=>setP1(e.target.value)} autoFocus/></F>
+  <F l="พิมพ์ซ้ำอีกครั้ง"><input type="password" value={p2} onChange={e=>setP2(e.target.value)}/></F>
+  {err&&<div style={{color:'var(--red)',margin:'8px 0'}}>⚠️ {err}</div>}
+  <div className="row" style={{marginTop:12,justifyContent:'space-between'}}>
+   <button className="btn gray" onClick={onClose}>✕ ยกเลิก</button>
+   <button className="btn" disabled={busy} onClick={go}>{busy?'กำลังบันทึก…':'บันทึกรหัสผ่านใหม่'}</button>
+  </div>
+ </Modal>;
+}
 // ===== ตั้งค่า =====
 function Settings({refresh}){
+ const [pwModal,setPwModal]=useState(false);
  const doExport=()=>{const blob=new Blob([Repo.exportJSON()],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rental-backup-'+today()+'.json';a.click()};
  const doImport=(e)=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();
@@ -1519,8 +1549,12 @@ function Settings({refresh}){
     ข้อมูลอาคาร + อัตราค่าน้ำ-ไฟ ของแต่ละอาคาร แก้ได้ที่<br/>
     <b>หน้าแรก → แตะชื่ออาคาร → หน้าข้อมูลอาคาร</b></div></div>
   <div className="card"><h2>บัญชีผู้ใช้</h2>
-   <div className="mut" style={{marginBottom:10}}>ออกจากระบบแล้ว ต้องใส่อีเมล+รหัสผ่านใหม่จึงจะเห็นข้อมูลอีกครั้ง</div>
-   <button className="btn line" onClick={async()=>{if(unsynced())await forceSync();await supa.auth.signOut();location.reload()}}>🚪 ออกจากระบบ</button>
+   <div className="mut" style={{marginBottom:10}}>รหัสผ่านใหม่จะใช้ล็อกอินทุกเครื่อง (มือถือ/คอม) · ออกจากระบบแล้วต้องใส่อีเมล+รหัสผ่านจึงจะเห็นข้อมูลอีกครั้ง</div>
+   <div className="row">
+    <button className="btn" onClick={()=>setPwModal(true)}>🔑 เปลี่ยนรหัสผ่าน</button>
+    <button className="btn line" onClick={async()=>{if(unsynced())await forceSync();await supa.auth.signOut();location.reload()}}>🚪 ออกจากระบบ</button>
+   </div>
+   {pwModal&&<ChangePwModal onClose={()=>setPwModal(false)}/>}
   </div>
   <div className="card"><h2>เขตอันตราย</h2>
    <button className="btn red" onClick={async()=>{if(confirm('ล้างข้อมูลทั้งหมดบนคลาวด์ (ทุกเครื่องจะว่างเปล่า)? การกระทำนี้ย้อนกลับไม่ได้ (ควรส่งออก backup ก่อน)')&&confirm('ยืนยันอีกครั้ง: ลบข้อมูลทุกอาคาร ทุกห้อง ทุกบิล ถาวร?')){Repo.reset();await forceSync();location.reload()}}}>♻️ ล้างข้อมูลทั้งหมด (เริ่มระบบเปล่า)</button>
