@@ -1593,13 +1593,48 @@ function Login(){
    <label>รหัสผ่าน<input type="password" value={pw} onChange={e=>setPw(e.target.value)} required/></label>
    {err&&<div style={{color:'var(--red)',margin:'8px 0'}}>⚠️ {err}</div>}
    <button className="btn" style={{width:'100%',marginTop:12}} disabled={busy}>{busy?'กำลังเข้าสู่ระบบ…':'เข้าสู่ระบบ'}</button>
+   <div style={{textAlign:'center',marginTop:12}}>
+    <a href="#" style={{color:'var(--mut)',fontSize:13,textDecoration:'underline'}} onClick={async e=>{e.preventDefault();
+     const em=email.trim();
+     if(!em){setErr('กรอกอีเมลในช่องด้านบนก่อน แล้วค่อยกด "ลืมรหัสผ่าน"');return}
+     setBusy(true);setErr('');
+     const {error}=await supa.auth.resetPasswordForEmail(em,{redirectTo:'https://prayoonsi147-code.github.io/rental-app/'});
+     setBusy(false);
+     if(error)setErr(error.message);
+     else alert('ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่ '+em+' แล้ว\nเปิดอีเมลแล้วแตะลิงก์ (ใช้ได้ 1 ชั่วโมง) — ถ้าไม่เจอ เช็คในถังขยะ/สแปม');
+    }}>ลืมรหัสผ่าน?</a>
+   </div>
+  </form></div>;
+}
+// หน้าตั้งรหัสผ่านใหม่ (เปิดจากลิงก์ในอีเมล)
+function ResetPw(){
+ const [p1,setP1]=useState('');const [p2,setP2]=useState('');
+ const [err,setErr]=useState('');const [busy,setBusy]=useState(false);
+ const go=async e=>{e.preventDefault();
+  if(p1.length<6){setErr('รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร');return}
+  if(p1!==p2){setErr('รหัสผ่านสองช่องไม่ตรงกัน ลองพิมพ์ใหม่ (ระวังภาษาแป้นพิมพ์)');return}
+  setBusy(true);setErr('');
+  const {error}=await supa.auth.updateUser({password:p1});
+  if(error){setBusy(false);setErr(error.message)}
+  else{alert('ตั้งรหัสผ่านใหม่เรียบร้อย — จำรหัสนี้ไว้ใช้ล็อกอินทุกเครื่อง');history.replaceState(null,'',location.pathname);location.reload()}
+ };
+ return <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+  <form className="card" style={{maxWidth:380,width:'100%'}} onSubmit={go}>
+   <h2 style={{textAlign:'center'}}>🔑 ตั้งรหัสผ่านใหม่</h2>
+   <div className="mut" style={{textAlign:'center',marginBottom:14}}>ตั้งแล้วใช้รหัสนี้ล็อกอินทั้งมือถือและคอมพิวเตอร์</div>
+   <label>รหัสผ่านใหม่<input type="password" value={p1} onChange={e=>setP1(e.target.value)} autoFocus required/></label>
+   <label>พิมพ์ซ้ำอีกครั้ง<input type="password" value={p2} onChange={e=>setP2(e.target.value)} required/></label>
+   {err&&<div style={{color:'var(--red)',margin:'8px 0'}}>⚠️ {err}</div>}
+   <button className="btn" style={{width:'100%',marginTop:12}} disabled={busy}>{busy?'กำลังบันทึก…':'บันทึกรหัสผ่านใหม่'}</button>
   </form></div>;
 }
 // ===== Bootstrap: เช็คล็อกอิน → โหลดข้อมูลจากคลาวด์ → เปิดแอป =====
 const _root=ReactDOM.createRoot(document.getElementById('root'));
 async function boot(){
  try{
+  const isRecovery=location.hash.indexOf('type=recovery')>=0;
   const {data:{session}}=await supa.auth.getSession();
+  if(isRecovery&&session){_root.render(<ResetPw/>);return}
   if(!session){_root.render(<Login/>);return}
   _root.render(<div style={{padding:'60px 20px',textAlign:'center',fontFamily:'Prompt,sans-serif'}}>⏳ กำลังโหลดข้อมูลจากคลาวด์…</div>);
   _db=await fetchDB();
