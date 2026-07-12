@@ -1538,11 +1538,11 @@ function Settings({refresh}){
    alert('นำเข้าและบันทึกขึ้นคลาวด์แล้ว');location.reload()
   }catch(err){alert('ผิดพลาด: '+err.message)}};rd.readAsText(f)};
  return <div>
-  <div className="card"><h2>สำรองข้อมูล (สำคัญ!)</h2>
-   <div className="mut" style={{marginBottom:10}}>เฟส 2 ข้อมูลหลักอยู่บนคลาวด์ (Supabase) ทุกเครื่องเห็นชุดเดียวกัน — แนะนำส่งออกไฟล์ backup เก็บไว้เป็นประจำเผื่อกรณีฉุกเฉิน</div>
+  <div className="card"><h2>Backup ข้อมูล</h2>
+   <div className="mut" style={{marginBottom:10}}>ข้อมูลทุกอย่างบันทึกขึ้นคลาวด์อัตโนมัติอยู่แล้ว (จุดเขียวมุมขวาบน) — Backup คือสำเนาเก็บไว้ในเครื่องเผื่อเหตุฉุกเฉินเท่านั้น แนะนำเดือนละครั้ง</div>
    <div className="row">
-    <button className="btn" onClick={doExport}>⬇️ ส่งออกข้อมูล (backup)</button>
-    <label className="btn line" style={{display:'inline-block'}}>⬆️ นำเข้าข้อมูล<input type="file" accept=".json" style={{display:'none'}} onChange={doImport}/></label>
+    <button className="btn" onClick={doExport}>💾 Backup ข้อมูลเก็บไว้</button>
+    <label className="btn line" style={{display:'inline-block'}}>♻️ กู้คืนจากไฟล์ Backup<input type="file" accept=".json" style={{display:'none'}} onChange={doImport}/></label>
    </div></div>
   <div className="card"><h2>การตั้งค่าอาคารย้ายไปไหน?</h2>
    <div style={{lineHeight:1.9,fontSize:14}}>
