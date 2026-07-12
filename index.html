@@ -86,7 +86,9 @@ table.t td.r,table.t th.r{text-align:right}
 .modal-bg{position:fixed;inset:0;background:rgba(14,30,24,.55);backdrop-filter:blur(3px);z-index:40;
 display:flex;align-items:flex-end;justify-content:center}
 .modal{background:#fff;border-radius:22px 22px 0 0;padding:18px;width:100%;max-width:640px;max-height:88vh;
-overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.25)}
+overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.25);overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.modal-bg{overscroll-behavior:contain}
+html.modal-open,html.modal-open body{overflow:hidden!important}
 .modal::before{content:'';display:block;width:42px;height:5px;border-radius:99px;background:#ddd8ca;margin:0 auto 12px}
 @media(min-width:640px){.modal-bg{align-items:center}.modal{border-radius:22px}.modal::before{display:none}}
 .scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -369,6 +371,18 @@ const PAGES=[
  {k:'meters',ic:'⚡',l:'จดมิเตอร์'},{k:'bills',ic:'🧾',l:'บิล'},{k:'expenses',ic:'💸',l:'รับ/จ่าย'},
  {k:'summary',ic:'📋',l:'สรุป'},{k:'settings',ic:'⚙️',l:'ตั้งค่า'}];
 function Modal({title,onClose,children}){
+ // ล็อกการเลื่อนของหน้าหลักตลอดเวลาที่ป๊อปอัพเปิด (เทคนิค body fixed — ได้ผลทั้ง PC และ iOS/Android)
+ useEffect(()=>{
+  const y=window.scrollY,b=document.body.style;
+  document.documentElement.classList.add('modal-open');
+  b.position='fixed';b.top=(-y)+'px';b.left='0';b.right='0';b.width='100%';
+  return()=>{
+   if(document.querySelectorAll('.modal-bg').length<=1){
+    document.documentElement.classList.remove('modal-open');
+    b.position='';b.top='';b.left='';b.right='';b.width='';
+    window.scrollTo(0,y);
+   }};
+ },[]);
  return <div className="modal-bg" onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
   <div className="modal">
    <div className="row" style={{justifyContent:'space-between',marginBottom:10}}>
