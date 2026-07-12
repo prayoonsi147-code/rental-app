@@ -537,6 +537,10 @@ function PropertyPage({refresh,go}){
    <button className="btn sm gray" onClick={()=>go('home')}>← กลับหน้าหลัก</button>
    <span className="tag g">อาคารทำงานปัจจุบัน</span>
   </div>
+  <div className="row" style={{gap:6,marginBottom:12,flexWrap:'wrap'}}>
+   {PAGES.filter(x=>['units','meters','bills','expenses','summary'].includes(x.k)).map(x=>
+    <button key={x.k} className="btn sm line" style={{padding:'4px 10px',fontSize:12}} onClick={()=>go(x.k)}>{x.ic} {x.l}</button>)}
+  </div>
   <div className="hero" style={{marginBottom:13}}>
    <div className="hero-name">{propIcon(p.type)} {p.name}</div>
    <div className="hero-sub">{p.type} · {us.length} หน่วยเช่า · ค้างชำระ {unpaid.length} ใบ ({fmt(unpaid.reduce((s,b)=>s+b.total,0))} บาท)</div>
@@ -559,14 +563,6 @@ function PropertyPage({refresh,go}){
    <div style={{marginTop:10}}><button className="btn" onClick={()=>setPm({...p})}>✏️ แก้ไขข้อมูลอาคาร</button></div>
   </div>
   <RatesCard refresh={refresh}/>
-  <div className="card"><h2>ทางลัดของอาคารนี้</h2>
-   <div className="row">
-    <button className="btn" onClick={()=>go('units')}>🚪 ห้องเช่า ({us.length})</button>
-    <button className="btn" onClick={()=>go('meters')}>⚡ จดมิเตอร์</button>
-    <button className="btn" onClick={()=>go('bills')}>🧾 บิล</button>
-    <button className="btn" onClick={()=>go('expenses')}>💸 ค่าใช้จ่าย</button>
-    <button className="btn" onClick={()=>go('summary')}>📋 สรุปเดือน</button>
-   </div></div>
   <div className="card"><h2>เขตอันตราย</h2>
    {us.length===0
     ?<div className="mut" style={{marginBottom:8}}>อาคารนี้ไม่มีห้องเช่าในระบบ ลบได้ทันที</div>
